@@ -2,10 +2,10 @@
 const Views = window.Views = window.Views || {};
 const IMG = n => 'assets/img/' + n + '.svg';
 const MODUL = [
-  { id: 'S1', tag: 'Sub-bab 1', judul: 'Cara Kerja Internet & Mesin Pencari', ket: 'Ikuti perjalanan paket data dan bongkar rahasia robot penjelajah mesin pencari.', img: ['modul-1-a', 'modul-1-b', 'modul-1-c'], chip: ['📖 Materi', '🧪 Lab Simulasi', '🧩 Kegiatan', '📝 Asesmen'], menit: 32 },
-  { id: 'S2', tag: 'Sub-bab 2', judul: 'Literasi Digital & Evaluasi Informasi', ket: 'Jadi detektif cek fakta: kenali hoaks, periksa domain, dan terapkan prinsip S.A.R.I.', img: ['modul-2-a', 'modul-2-b', 'modul-2-c'], chip: ['📖 Materi', '🧪 Lab Cek Fakta', '🧩 Eksperimen Hoaks', '📝 Asesmen'], menit: 35 },
-  { id: 'S3', tag: 'Sub-bab 3', judul: 'Ancaman Digital & Perlindungan Data Pribadi', ket: 'Tangkis phishing, jaga kode OTP, buat sandi kuat, dan aktifkan verifikasi dua langkah.', img: ['modul-3-a', 'modul-3-b', 'modul-3-c'], chip: ['📖 Materi', '🧪 Pesan Misterius', '🔑 Bengkel Sandi', '📝 Asesmen'], menit: 35 },
-  { id: 'SUM', tag: 'Uji Kompetensi', judul: 'Asesmen Sumatif Bab 2 (Tes Standar TKA)', ket: 'Buktikan kemampuanmu! Terbuka setelah seluruh sub-bab selesai. KKM 72.', img: ['modul-4-a', 'modul-4-b', 'modul-4-c'], chip: ['🏆 10 Soal Bernarasi', '⭐ Nilai Resmi'], menit: 25 }
+  { id: 'S1', tag: 'Sub-bab 1', judul: 'Cara Kerja Internet & Mesin Pencari', ket: 'Ikuti perjalanan paket data dan bongkar rahasia robot penjelajah mesin pencari.', img: ['modul-1-a', 'modul-1-b', 'modul-1-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🧩 Kegiatan', '📝 Asesmen'], menit: 62 },
+  { id: 'S2', tag: 'Sub-bab 2', judul: 'Literasi Digital & Evaluasi Informasi', ket: 'Jadi detektif cek fakta: kenali hoaks, periksa domain, dan terapkan prinsip S.A.R.I.', img: ['modul-2-a', 'modul-2-b', 'modul-2-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🧩 Eksperimen Hoaks', '📝 Asesmen'], menit: 71 },
+  { id: 'S3', tag: 'Sub-bab 3', judul: 'Ancaman Digital & Perlindungan Data Pribadi', ket: 'Tangkis phishing, jaga kode OTP, buat sandi kuat, dan aktifkan verifikasi dua langkah.', img: ['modul-3-a', 'modul-3-b', 'modul-3-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🔑 Bengkel Sandi', '📝 Asesmen'], menit: 61 },
+  { id: 'SUM', tag: 'Uji Kompetensi', judul: 'Asesmen Sumatif Bab 2 (Simulasi TKA)', ket: 'Tampilan ujian berbasis komputer: 3 bentuk soal, daftar soal, ragu-ragu, dan timer. Terbuka setelah semua sub-bab selesai. KKM 72.', img: ['modul-4-a', 'modul-4-b', 'modul-4-c'], chip: ['🏆 20 Soal Format TKA', '⭐ Nilai Resmi'], menit: 40 }
 ];
 const ALUR = [['📖', 'Pahami', 'Materi interaktif bernarasi yang dekat dengan keseharianmu.'], ['🧪', 'Praktikkan', 'Lab & simulasi: cari fakta, bongkar pesan phishing.'], ['🧩', 'Terapkan', 'Kegiatan studi kasus: pilih langkah terbaik.'], ['📝', 'Asesmen', 'Soal bernarasi dengan umpan balik langsung.'], ['💭', 'Refleksi', 'Tuliskan pelajaranmu, lalu nilai resmi terbuka.'], ['🏅', 'Naik Level', 'Sub-bab berikutnya terbuka. Selesai semua = bebas belajar ulang!']];
 const FITUR = [['🔒', 'Kunci berurutan, dijaga server', 'Aktivitas terkunci tidak bisa dibuka lewat tautan atau kode di browser.'], ['🔁', 'Latihan ulang bebas beban', 'Nilai resmi dari pengerjaan pertama. Latihan tidak menimpa nilai.'], ['📊', 'Dashboard guru 4 kelas', 'Progres, nilai, grafik statistik, filter, dan buka kunci manual.'], ['📥', 'Unduh Excel & PDF', 'Rekap nilai resmi siap untuk e-Rapor/Dapodik.']];
@@ -19,7 +19,7 @@ Views.landing = function (el) {
   el.innerHTML = `
   <header class="nav"><div class="container">
     <a class="logo" href="#/"><img src="assets/img/logo.svg" alt="">Dunia Digital Aman</a>
-    <nav class="nav-links"><a href="#modul">Modul</a><a href="#alur">Cara Belajar</a><a href="#guru">Untuk Guru</a><a href="#testi">Cerita Mereka</a></nav>
+    <nav class="nav-links"><a href="#identitas">Identitas</a><a href="#modul">Modul</a><a href="#alur">Cara Belajar</a><a href="#guru">Untuk Guru</a><a href="#testi">Cerita Mereka</a></nav>
     <div class="row"><a class="btn btn-ghost btn-sm" href="#/masuk?t=guru">Masuk Guru</a><a class="btn btn-primary btn-sm shine" href="#/masuk">Masuk Siswa</a></div>
   </div></header>
   <section class="hero">
@@ -34,6 +34,7 @@ Views.landing = function (el) {
   <section class="container"><div class="grid g4" style="margin-top:-36px;position:relative;z-index:5">
     ${[[3, 'Sub-bab', ''], [13, 'Aktivitas Berurutan', ''], [4, 'Kelas (7A–7D)', ''], [72, 'KKM Sumatif', '']].map(s => `<div class="card stat glow rv"><b data-count="${s[0]}">0</b><span class="muted">${s[1]}</span></div>`).join('')}
   </div></section>
+  <section class="sec" id="identitas" style="padding-bottom:20px"><div class="container"><div class="rv">${Stu.identitas(PV.bab, true)}</div></div></section>
   <section class="sec" id="modul"><div class="container">
     <h2 class="center rv">Pilih Petualangan Belajarmu</h2><p class="lead rv">Tiga sub-bab seru dan satu uji kompetensi. Arahkan kursor ke kartu — gambarnya berganti otomatis!</p>
     <div class="grid g4">${MODUL.map(m => `
@@ -63,7 +64,7 @@ Views.landing = function (el) {
   <section class="container sec"><div class="cta-band rv"><div class="blob" style="width:240px;height:240px;background:#fff;opacity:.15;left:-60px;top:-60px"></div>
     <h2>Siap menjadi Penjelajah Digital yang Aman?</h2><p style="opacity:.9;margin:10px 0 24px">Masuk dengan NIS atau kode akses dari gurumu.</p>
     <a class="btn btn-lg shine" style="background:#fff;color:var(--primary-d)" href="#/masuk">▶ Mulai Sekarang</a></div></section>
-  <footer><div class="container row between wrap"><div><b style="color:#fff;font-family:var(--ff-h)">Menjelajahi Dunia Digital dengan Aman</b><div class="small">Koding · SMP Kelas VII · Bab 2 — Buku Erlangga, Panca O. Hadi Putra</div></div>
+  <footer><div class="container row between wrap"><div><b style="color:#fff;font-family:var(--ff-h)">Menjelajahi Dunia Digital dengan Aman</b><div class="small">Koding dan Kecerdasan Artifisial · Kelas VII · Fase D · Guru: ${esc(PV.bab.guru)}</div></div>
     <div class="row"><button class="btn btn-sm" style="background:#2e2b57;color:#fff" data-act="lup">🔍 Kursor Lup: nyala/mati</button></div></div></footer>`;
   renderTesti(PV.testi);
   $('[data-act=lup]', el).onclick = () => Lup.toggle();

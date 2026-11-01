@@ -2,7 +2,7 @@
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const rich = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\*(.+?)\*/g, '<i>$1</i>');
+const rich = s => { let o = esc(s), b = false, i = false; o = o.replace(/\*{1,3}/g, m => { if (m.length === 3) { if (b && i) { b = i = false; return '</i></b>'; } if (!b && !i) { b = i = true; return '<b><i>'; } if (b) { b = false; return '</b>'; } i = false; return '</i>'; } if (m.length === 2) { b = !b; return b ? '<b>' : '</b>'; } i = !i; return i ? '<i>' : '</i>'; }); return o + (i ? '</i>' : '') + (b ? '</b>' : ''); };
 const initials = n => String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase();
 const waktu = s => { if (!s) return '-'; const d = new Date(String(s).replace(' ', 'T') + '+07:00'); return isNaN(d) ? s : d.toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }).replace('.', ':') + ' WIB'; };
 const lalu = s => { const d = new Date(String(s).replace(' ', 'T') + '+07:00'), m = Math.round((Date.now() - d) / 60000); return isNaN(d) ? '' : m < 1 ? 'baru saja' : m < 60 ? m + ' menit yang lalu' : m < 1440 ? Math.round(m / 60) + ' jam yang lalu' : Math.round(m / 1440) + ' hari yang lalu'; };

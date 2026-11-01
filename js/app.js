@@ -6,7 +6,7 @@ function parseHash() {
 }
 let _lastPath = null;
 function route() {
-  clearTimers(); const m = $('#modal'); m.classList.remove('show'); m.innerHTML = '';
+  clearTimers(); document.body.classList.remove('tka-mode'); window.onbeforeunload = null; const m = $('#modal'); m.classList.remove('show'); m.innerHTML = '';
   const { parts, q, path } = parseHash(), el = $('#app');
   if (path !== _lastPath) { window.scrollTo(0, 0); _lastPath = path; }
   const s = Sesi.get(), p0 = parts[0] || '';

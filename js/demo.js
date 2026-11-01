@@ -57,7 +57,7 @@ const Demo = {
       asesmenList: PV.akt.filter(a => /Formatif|Sumatif/.test(a.jenis)).map(a => ({ id: a.id, judul: a.judul, jenis: a.jenis, ada: true })), pilih: 'S2-F',
       percobaan: [{ no: 0, skor: 80, benar: 4, total: 5, durasi: 860, waktu: '2026-10-14 10:45:00' }, { no: 1, skor: 100, benar: 5, total: 5, durasi: 540, waktu: '2026-10-14 11:30:00' }],
       tampil: 0, pcSel: { no: 0, skor: 80, benar: 4, total: 5, durasi: 860, waktu: '2026-10-14 10:45:00' },
-      soal: f.data.soal.map(q => ({ no: q.no, topik: q.topik, kasus: q.kasus || '', tanya: q.tanya, opsi: q.opsi, jawab: jw[q.no], kunci: keys[q.no], benar: jw[q.no] === keys[q.no], analisis: an[q.no], catatan: q.no === 2 ? 'Budi perlu penguatan kembali tentang fakta vs opini.' : '' })),
+      soal: f.data.soal.map(q => ({ no: q.no, jenis: 'PG', gambar: q.gambar || '', topik: q.topik, kasus: q.kasus || '', tanya: q.tanya, opsi: q.opsi, jawab: jw[q.no], kunci: keys[q.no], kredit: jw[q.no] === keys[q.no] ? 1 : 0, benar: jw[q.no] === keys[q.no], analisis: an[q.no], catatan: q.no === 2 ? 'Budi perlu penguatan kembali tentang fakta vs opini.' : '' })),
       refleksi: { perasaan: 'Paham', isi: 'Saya belajar bahwa kode OTP dan password tidak boleh diberikan ke siapa pun bahkan jika mengaku pihak resmi game. Saya juga harus selalu memeriksa tautan domain seperti .xyz atau .com palsu.', waktu: '2026-10-14 10:45:00', catatan: '' },
       audit: [{ waktu: '2026-10-14 10:45:00', judul: 'Nilai resmi tercatat: Asesmen Formatif Sub-bab 2', detail: 'Skor 80 (4/5)', tipe: 'nilai' }, { waktu: '2026-10-14 09:55:00', judul: 'Tuntas: Lab: Cek Fakta Kuota Gratis', detail: 'Durasi 18 mnt 0 dtk', tipe: 'ok' }, { waktu: '2026-10-14 09:30:00', judul: 'Tuntas: Materi: Fakta vs Opini & Hoaks', detail: 'Durasi 6 mnt 10 dtk', tipe: 'ok' }] };
   },
@@ -67,8 +67,8 @@ const Demo = {
       detail: { id: 'd5', nama: 'Rani Maharani', nis: '7A-25', progres: 45, macet: this.S[4].macet, status: st },
       stat: { minggu: 8, perKelas: { '7A': 3, '7B': 2, '7C': 1, '7D': 2 }, kategori: { 'Kendala Gawai': 5, 'Sakit/Izin': 2, 'Remedial Mandiri': 1 }, perluIntervensi: ['Rani M.', 'Galih P.', 'Dita S.'] },
       riwayat: [
-        { waktu: '2026-10-14 10:48:00', guru: 'Ibu Maya Pratiwi, S.Kom', siswa: 'Rani Maharani', kelas: '7A', aktivitas: ['Lab: Cek Fakta Kuota Gratis'], cakupan: 'Per Siswa', kategori: 'Kendala Gawai', alasan: 'Browser lab freeze saat simpan data eksperimen.' },
-        { waktu: '2026-10-14 09:15:00', guru: 'Ibu Maya Pratiwi, S.Kom', siswa: 'Dimas Anggara', kelas: '7A', aktivitas: ['Asesmen Formatif Sub-bab 1'], cakupan: 'Per Siswa', kategori: 'Remedial Mandiri', alasan: 'Remedial mandiri terjadwal di lab komputer.' },
+        { waktu: '2026-10-14 10:48:00', guru: PV.bab.guru, siswa: 'Rani Maharani', kelas: '7A', aktivitas: ['Lab: Cek Fakta Kuota Gratis'], cakupan: 'Per Siswa', kategori: 'Kendala Gawai', alasan: 'Browser lab freeze saat simpan data eksperimen.' },
+        { waktu: '2026-10-14 09:15:00', guru: PV.bab.guru, siswa: 'Dimas Anggara', kelas: '7A', aktivitas: ['Asesmen Formatif Sub-bab 1'], cakupan: 'Per Siswa', kategori: 'Remedial Mandiri', alasan: 'Remedial mandiri terjadwal di lab komputer.' },
         { waktu: '2026-10-13 14:20:00', guru: 'Bpk. Hendra Wijaya, S.Pd', siswa: 'Seluruh Siswa (32)', kelas: '7C', aktivitas: ['Materi: Internet & Mesin Pencari'], cakupan: 'Per Kelas', kategori: 'Penugasan Khusus', alasan: 'Pembelajaran sinkron serentak menggunakan proyektor.' }] };
   }
 };

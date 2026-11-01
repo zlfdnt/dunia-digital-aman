@@ -4,17 +4,17 @@ const STATUS = { TUNTAS: ['b-green', '✓ TUNTAS'], REMEDIAL: ['b-red', '⚠ REM
 const pctBar = (p, cls) => `<div class="bar ${cls || ''}" style="height:8px"><i data-w="${p}%"></i></div>`;
 
 Gur.shell = function (el, ctx, tab, title, extra) {
-  const s = Sesi.get(), nama = API.demo ? 'Ibu Maya Pratiwi, S.Kom' : (s ? s.me.nama : 'Guru');
+  const s = Sesi.get(), nama = API.demo ? PV.bab.guru : (s ? s.me.nama : 'Guru');
   const nav = [['overview', '▦', 'Overview Dashboard'], ['log', '🗂', 'Log Aktivitas & Jawaban'], ['nilai', '✅', 'Nilai Resmi & Rekap'], ['kunci', '🔓', 'Buka Kunci Manual'], ['impor', '⚙️', 'Impor & Pengaturan']];
   el.innerHTML = (API.demo ? `<div class="preview-bar">👀 Pratinjau Dashboard Guru — data contoh, read-only <a href="#/masuk?t=guru">Masuk Guru</a> <a href="#/">Keluar</a></div>` : '') +
     `<div class="g-shell"><aside class="g-side"><a class="logo" href="#/" style="margin-bottom:6px"><span class="icon-circle" style="background:var(--grad);color:#fff">🎓</span><span>SMP Koding<br><small class="muted" style="font-weight:600;font-size:12px">Portal Guru · Bab 2</small></span></a>
-      <div class="topic"><small>TOPIK KURIKULUM</small><div><b>Dunia Digital Aman</b></div></div>
+      <div class="topic"><small>MATA PELAJARAN</small><div><b>Koding & Kecerdasan Artifisial</b><div class="tiny muted">Kelas VII · Fase D · Bab 2</div></div></div>
       <nav>${nav.map(n => `<a href="${ctx.base}/${n[0]}" class="${tab === n[0] ? 'on' : ''}"><span>${n[1]}</span>${n[2]}</a>`).join('')}</nav>
       <div class="grow hide-m"></div>
       <div class="topic hide-m" style="background:var(--warm)"><b>🎧 Bantuan Lab</b><div class="small muted">Panduan guru & rubrik</div></div>
       <button class="btn btn-sm hide-m" style="background:var(--danger-s);color:var(--danger)" id="gout">⎋ Keluar Sesi</button></aside>
     <div><div class="g-top no-print"><div class="kelas-tabs" id="kt">${Gur.kelasList.map(k => `<button data-k="${k.kelas}" class="${k.kelas === Gur.kelas ? 'on' : ''}">Kelas ${k.kelas}</button>`).join('')}</div>
-      <div class="row"><span class="badge b-ok">● Lab Virtual Aktif</span><button class="btn btn-ghost btn-sm" data-act="lup">🔍</button><div style="text-align:right;line-height:1.2"><b class="small">${esc(nama)}</b><div class="tiny muted">Guru Koding Kelas VII</div></div><span class="avatar-i" style="background:var(--primary);color:#fff">👤</span></div></div>
+      <div class="row"><span class="badge b-ok">● Lab Virtual Aktif</span><button class="btn btn-ghost btn-sm" data-act="lup">🔍</button><div style="text-align:right;line-height:1.2"><b class="small">${esc(nama)}</b><div class="tiny muted">Guru KKA · Kelas VII · Fase D</div></div><span class="avatar-i" style="background:var(--primary);color:#fff">👤</span></div></div>
       <main class="g-main" id="gm"></main></div></div>`;
   $$('#kt button', el).forEach(b => b.onclick = () => { Gur.kelas = b.dataset.k; localStorage.setItem('ddd_kelas', Gur.kelas); window.refresh(); });
   $('#gout', el).onclick = () => { Sesi.clear(); API.demo = false; location.hash = '#/'; };
@@ -22,7 +22,8 @@ Gur.shell = function (el, ctx, tab, title, extra) {
   return $('#gm', el);
 };
 Gur.setKelas = d => { if (d && d.kelasList && d.kelasList.length) { const same = JSON.stringify(d.kelasList.map(k => k.kelas)) === JSON.stringify(Gur.kelasList.map(k => k.kelas)); Gur.kelasList = d.kelasList; if (!same) { const kt = $('#kt'); if (kt) { kt.innerHTML = Gur.kelasList.map(k => `<button data-k="${k.kelas}" class="${k.kelas === Gur.kelas ? 'on' : ''}">Kelas ${k.kelas}</button>`).join(''); $$('#kt button').forEach(b => b.onclick = () => { Gur.kelas = b.dataset.k; localStorage.setItem('ddd_kelas', Gur.kelas); window.refresh(); }); } } } };
-Gur.head = (crumb, title, sub, btns) => `<div class="crumb">SMP Koding › Bab 2: Menjelajahi Dunia Digital dengan Aman › <b>${crumb}</b></div><div class="row between wrap" style="align-items:flex-start"><div style="max-width:760px"><h1 style="font-size:34px">${title}</h1>${sub ? `<p class="muted mt">${sub}</p>` : ''}</div><div class="row wrap no-print">${btns || ''}</div></div>`;
+Gur.idStrip = () => `<div class="row wrap mt"><span class="badge">📚 ${esc(PV.bab.mapel)}</span><span class="badge">Kelas ${esc(PV.bab.kelas)}</span><span class="badge">Fase ${esc(PV.bab.fase)}</span><span class="badge b-ok">👩‍🏫 ${esc(PV.bab.guru)}</span><span class="badge b-warm">Semester ${esc(PV.bab.semester)}</span></div>`;
+Gur.head = (crumb, title, sub, btns) => `<div class="crumb">KKA › Bab 2: Menjelajahi Dunia Digital dengan Aman › <b>${crumb}</b></div><div class="row between wrap" style="align-items:flex-start"><div style="max-width:760px"><h1 style="font-size:34px">${title}</h1>${sub ? `<p class="muted mt">${sub}</p>` : ''}${Gur.idStrip()}</div><div class="row wrap no-print">${btns || ''}</div></div>`;
 Gur.err = (m, r) => { m.innerHTML = `<div class="card center"><div style="font-size:48px">😕</div><p class="mt">${esc((r && r.message) || 'Gagal memuat data.')}</p><button class="btn btn-primary mt" onclick="window.refresh()">Coba lagi</button></div>`; };
 Gur.load = (m, action, data, cb, age) => { if (!m.dataset.l) { m.innerHTML = Stu.skeleton + Stu.skeleton; m.dataset.l = 1; } swr(action, data, (d, cached, r) => { if (!d) return Gur.err(m, r); Gur.setKelas(d); cb(d); afterRender(m); }, age || 20000); };
 Gur.donut = (parts, size) => { const r = size / 2 - 12, c = 2 * Math.PI * r, tot = parts.reduce((a, p) => a + p[0], 0) || 1; let off = 0; return parts.map(p => { const l = p[0] / tot * c, s = `<circle cx="${size / 2}" cy="${size / 2}" r="${r}" fill="none" stroke="${p[1]}" stroke-width="22" stroke-dasharray="${l} ${c - l}" stroke-dashoffset="${-off}"/>`; off += l; return s; }).join(''); };
@@ -42,7 +43,7 @@ Views.gOverview = function (el, ctx) {
   Gur.load(m, 'guru.overview', { kelas: Gur.kelas }, d => {
     const k = d.kpi, S = d.siswa, PER = 5;
     const dist = d.distribusi, totD = dist.tuntas + dist.remedial + dist.belum || 1;
-    m.innerHTML = Gur.head('Ringkasan Nilai & Progres', 'Overview Dashboard Kelas <span class="badge b-ok" style="vertical-align:middle;font-size:12px">● Semester Ganjil 2024/2025</span>', '',
+    m.innerHTML = Gur.head('Ringkasan Nilai & Progres', 'Overview Dashboard Kelas <span class="badge b-ok" style="vertical-align:middle;font-size:12px">● Semester ${esc(PV.bab.semester)}</span>', '',
       `<button class="btn btn-ghost" id="dx">📗 Unduh Excel Rekap</button><button class="btn btn-ghost" id="dp">📄 Unduh PDF Laporan</button>`) + `
     <div class="grid g4 mt">
       <div class="card kpi glow"><small>Total Partisipasi</small><div class="big">${k.total} <span class="small muted" style="font-weight:600">Siswa Terdaftar</span></div><div class="row small"><b>${k.selesaiPenuh}%</b><span class="muted">Selesai Penuh semua modul</span></div></div>
@@ -93,10 +94,7 @@ Views.gLog = function (el, ctx) {
     ${!pc ? '<div class="card center mt2">Siswa belum mengerjakan asesmen ini.</div>' : `
     <div class="grid mt2" style="grid-template-columns:1.7fr 1fr;align-items:start"><div>
       <div class="card"><div class="row between wrap"><div><h3>Analisis Jawaban Soal</h3><div class="small muted">${pc.total} soal pilihan ganda bernarasi</div></div><div class="row wrap"><span class="badge b-ok">✔ Benar: ${pc.benar} / ${pc.total}</span><span class="badge">⏱ ${Math.floor(pc.durasi / 60)}m ${pc.durasi % 60}s</span><span class="badge">📅 ${waktu(pc.waktu)}</span></div></div></div>
-      ${d.soal.map(q => `<div class="card mt"><div class="row between wrap"><div class="row"><span class="icon-circle" style="${q.benar ? '' : 'background:var(--danger-s)'}">${q.no}</span><b>${esc(q.topik)}</b></div><span class="badge ${q.benar ? 'b-ok' : 'b-red'}">${q.benar ? '✓ Benar (+' + Math.round(100 / pc.total) + ' Poin)' : '✕ Perlu Evaluasi (0 Poin)'}</span></div>
-        ${q.kasus ? `<div class="card warm mt small">${esc(q.kasus)}</div>` : ''}<div class="mt" style="background:var(--lav2);border-radius:14px;padding:12px"><b>${rich(q.tanya)}</b></div>
-        <div class="mt">${['A', 'B', 'C', 'D'].map(k => `<div class="opt ${k === q.kunci ? 'ok' : k === q.jawab ? 'bad' : ''}" style="margin-bottom:6px;padding:10px 12px"><span class="dot">${k}</span><span class="grow">${esc(q.opsi[k])}</span>${k === q.jawab ? '<span class="badge ' + (k === q.kunci ? 'b-green' : 'b-red') + '">PILIHAN SISWA ' + (k === q.kunci ? '✓' : '(KELIRU)') + '</span>' : ''}${k === q.kunci && k !== q.jawab ? '<span class="badge b-green">KUNCI BENAR</span>' : ''}</div>`).join('')}</div>
-        <div class="card warm mt small"><b>ANALISIS SISTEM</b><br>${esc(q.analisis)}</div>
+      ${d.soal.map(q => `<div class="card mt"><div class="row between wrap"><div class="row"><span class="icon-circle" style="${q.benar ? '' : 'background:var(--danger-s)'}">${q.no}</span><div><b>${esc(q.topik)}</b><div class="tiny muted">${Soal.jenisLabel(q.jenis)}</div></div></div>${Soal.badge(q)}</div><div class="mt">${Soal.review(q)}</div>
         <div class="mt"><label>📝 CATATAN KHUSUS GURU UNTUK SOAL INI</label><div class="row"><input data-cat="${q.no}" value="${esc(q.catatan)}" placeholder="Tulis catatan untuk soal ini…"><button class="btn btn-soft btn-sm" data-sv="${q.no}">Simpan</button></div></div></div>`).join('')}</div>
     <div class="col">
       <div class="card"><div class="row between"><h3 style="font-size:19px">💭 Refleksi Belajar Siswa</h3><span class="badge ${d.refleksi ? 'b-ok' : ''}">${d.refleksi ? '✓ Terisi Lengkap' : 'Kosong'}</span></div>
@@ -120,7 +118,7 @@ Views.gNilai = function (el, ctx) {
     const k = d.kpi, S = d.siswa, PER = 7;
     m.innerHTML = Gur.head('Rekap Nilai Resmi & Laporan', 'Rekap Nilai Resmi & Evaluasi Belajar Siswa', 'Sinkronisasi otomatis pengerjaan evaluasi resmi. Dokumen siap diekspor ke format E-Rapor Dapodik Kurikulum Merdeka.',
       `<div class="col"><button class="btn btn-green" id="dx">📗 Unduh (.xlsx)<br><small style="font-weight:600;opacity:.9">Format Dapodik / E-Rapor</small></button><button class="btn btn-primary" id="dp">📄 Cetak PDF (.pdf)</button></div>`) + `
-    <div class="row wrap mt"><span class="badge">Semester Ganjil 2024/2025</span><span class="badge b-red">◎ Standar Kelulusan KKM: ${k.kkm}</span></div>
+    <div class="row wrap mt"><span class="badge">Semester ${esc(PV.bab.semester)}</span><span class="badge b-red">◎ Standar Kelulusan KKM: ${k.kkm}</span></div>
     <div class="grid g4 mt">
       <div class="card kpi glow"><small>Rerata Formatif Resmi</small><div class="big">${k.rerataFormatif === null ? '—' : k.rerataFormatif}<span class="small muted"> / 100</span></div>${pctBar(k.rerataFormatif || 0)}</div>
       <div class="card kpi glow"><small>Ketuntasan Sumatif</small><div class="big" style="color:var(--green)">${k.total ? Math.round(k.tuntasN / k.total * 100) : 0}%<span class="small muted"> (${k.tuntasN}/${k.total})</span></div><div class="row"><span class="badge b-ok">${k.tuntasN} Tuntas KKM</span><span class="badge b-red">${k.remedial} Perlu Remedial</span></div></div>
@@ -173,7 +171,7 @@ Views.gKunci = function (el, ctx) {
       <label class="row mt" style="cursor:pointer;font-weight:600;color:var(--text)"><input type="checkbox" id="br" style="width:20px;height:20px;flex:none" ${F.beruntun ? 'checked' : ''}>Buka juga aktivitas berikutnya dalam sub-bab ini secara beruntun jika prasyarat terhubung</label>
       <div class="row between mt2"><label style="margin:0">④ ALASAN PEMBUKAAN KUNCI *</label><span class="tiny" style="color:var(--danger);font-weight:800">Wajib Diisi (Audit Trail)</span></div>
       <div class="chips mt">${KAT.map(k => `<button class="chip ${F.kategori === k ? 'on' : ''}" data-kat="${k}">+ ${k}</button>`).join('')}</div>
-      <textarea id="al" class="mt" placeholder="Contoh: Siswa mengalami kendala koneksi internet dan peramban browser tertutup mendadak saat sesi lab di kelas.">${esc(F.alasan)}</textarea><div class="tiny muted mt">Dicatat atas nama autentikasi: <b>${esc(Sesi.get() ? Sesi.get().me.nama : 'Ibu Maya Pratiwi, S.Kom')}</b></div>
+      <textarea id="al" class="mt" placeholder="Contoh: Siswa mengalami kendala koneksi internet dan peramban browser tertutup mendadak saat sesi lab di kelas.">${esc(F.alasan)}</textarea><div class="tiny muted mt">Dicatat atas nama autentikasi: <b>${esc(Sesi.get() ? Sesi.get().me.nama : PV.bab.guru)}</b></div>
       <div class="row mt2"><button class="btn btn-primary btn-lg shine grow" id="go">🔓 Buka Kunci Aktivitas Sekarang →</button><button class="btn btn-soft" id="rs">Reset Formulir</button></div></div>
     <div class="col">
       <div class="card kpi glow"><small>Buka Manual Minggu Ini</small><div class="row between"><div class="big">${S.minggu} Kali</div><span class="badge b-ok">Stabil</span></div><div class="tiny muted">${Object.keys(S.perKelas).sort().map(k => k + ': ' + S.perKelas[k]).join(' • ') || 'Belum ada'}</div></div>
@@ -220,7 +218,7 @@ Views.gImpor = function (el, ctx) {
     <div class="card"><h3>📄 Tambah Siswa via CSV</h3><p class="small muted mt">Tempel data: <code>Nama,Kelas,NIS,KodeAkses</code> (KodeAkses boleh kosong → dibuat otomatis). Satu siswa per baris.</p>
       <textarea id="csv" class="mt" style="min-height:130px" placeholder="Nama,Kelas,NIS,KodeAkses&#10;Anisa Rahma,7A,7A-40&#10;Bima Sakti,7B,7B-22"></textarea><div class="row mt"><button class="btn btn-soft" id="c1">🔍 Pindai</button><button class="btn btn-primary shine" id="c2">▶ Impor Siswa</button></div><div id="r2"></div></div>
     <div class="card"><h3>🔐 Ganti Kata Sandi Guru</h3><p class="small muted mt">Sandi minimal 10 karakter, memuat huruf dan angka. Setelah diganti, semua sesi guru berakhir.</p>
-      <label class="mt">Nama tampilan guru (opsional)</label><input id="nm" placeholder="Ibu Maya Pratiwi, S.Kom"><label class="mt">Kata sandi lama</label><input id="pl" type="password" autocomplete="current-password"><label class="mt">Kata sandi baru</label><input id="pb" type="password" autocomplete="new-password"><button class="btn btn-primary mt2 shine" id="gs">Simpan Kata Sandi</button></div>
+      <label class="mt">Nama tampilan guru (opsional)</label><input id="nm" placeholder="Zulfa Dianti, S.Pd., M.Pd., Gr."><label class="mt">Kata sandi lama</label><input id="pl" type="password" autocomplete="current-password"><label class="mt">Kata sandi baru</label><input id="pb" type="password" autocomplete="new-password"><button class="btn btn-primary mt2 shine" id="gs">Simpan Kata Sandi</button></div>
     <div class="card warm"><h3>ℹ️ Catatan Keamanan</h3><div class="col mt small"><div>• Rahasia aplikasi (kunci sesi, hash sandi) hanya di <b>Script Properties</b>, tidak pernah dikirim ke browser.</div><div>• Jangan bagikan spreadsheet database: sheet <b>Siswa</b> memuat kode akses.</div><div>• Batasi jumlah editor proyek Apps Script.</div><div>• Sesi tidak ikut pindah saat migrasi — siswa cukup masuk ulang.</div></div>
       <button class="btn btn-ghost mt" data-act="lup">🔍 Kursor Lup: nyala / mati</button></div></div>`;
   const jalan = async (act, dry, id) => { const r = await api(act === 'csv' ? 'guru.imporCsv' : 'guru.impor', act === 'csv' ? { csv: $('#csv', m).value, dryRun: dry, timpa: $('#tm', m).checked } : { source: $('#src', m).value, sheets: $$('.sh', m).filter(x => x.checked).map(x => x.value), dryRun: dry, timpa: $('#tm', m).checked }); if (!r.success) { toast(r.message, 'err'); $(id, m).innerHTML = ''; return; } toast(r.message, 'ok'); $(id, m).innerHTML = tabel(r.data); if (!dry) dropCache(); };
