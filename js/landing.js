@@ -8,7 +8,7 @@ const MODUL = [
   { id: 'SUM', tag: 'Uji Kompetensi', judul: 'Asesmen Sumatif Bab 2 (Simulasi TKA)', ket: 'Tampilan ujian berbasis komputer: 3 bentuk soal, daftar soal, ragu-ragu, dan timer. Terbuka setelah semua sub-bab selesai. KKM 72.', img: ['modul-4-a', 'modul-4-b', 'modul-4-c'], chip: ['🏆 20 Soal Format TKA', '⭐ Nilai Resmi'], menit: 40 }
 ];
 const ALUR = [['📖', 'Pahami', 'Materi interaktif bernarasi yang dekat dengan keseharianmu.'], ['🧪', 'Praktikkan', 'Lab & simulasi: cari fakta, bongkar pesan phishing.'], ['🧩', 'Terapkan', 'Kegiatan studi kasus: pilih langkah terbaik.'], ['📝', 'Asesmen', 'Soal bernarasi dengan umpan balik langsung.'], ['💭', 'Refleksi', 'Tuliskan pelajaranmu, lalu nilai resmi terbuka.'], ['🏅', 'Naik Level', 'Sub-bab berikutnya terbuka. Selesai semua = bebas belajar ulang!']];
-const FITUR = [['🔒', 'Kunci berurutan, dijaga server', 'Aktivitas terkunci tidak bisa dibuka lewat tautan atau kode di browser.'], ['🔁', 'Latihan ulang bebas beban', 'Nilai resmi dari pengerjaan pertama. Latihan tidak menimpa nilai.'], ['📊', 'Dashboard guru 4 kelas', 'Progres, nilai, grafik statistik, filter, dan buka kunci manual.'], ['📥', 'Unduh Excel & PDF', 'Rekap nilai resmi siap untuk e-Rapor/Dapodik.']];
+const FITUR = [['🔒', 'Kunci berurutan, dijaga server', 'Aktivitas terkunci tidak bisa dibuka lewat tautan atau kode di browser.'], ['🔁', 'Latihan ulang bebas beban', 'Nilai resmi dari pengerjaan pertama. Latihan tidak menimpa nilai.'], ['📊', 'Dashboard guru multi-kelas', 'Progres, nilai, grafik statistik, filter, dan buka kunci manual.'], ['📥', 'Unduh Excel & PDF', 'Rekap nilai resmi siap untuk e-Rapor/Dapodik.']];
 
 Views.landing = function (el) {
   const hero = [
@@ -19,7 +19,7 @@ Views.landing = function (el) {
   el.innerHTML = `
   <header class="nav"><div class="container">
     <a class="logo" href="#/"><img src="assets/img/logo.svg" alt="">Dunia Digital Aman</a>
-    <nav class="nav-links"><a href="#identitas">Identitas</a><a href="#modul">Modul</a><a href="#alur">Cara Belajar</a><a href="#guru">Untuk Guru</a><a href="#testi">Cerita Mereka</a></nav>
+    <nav class="nav-links"><a href="#identitas">Identitas</a><a href="#modul">Modul</a><a href="#alur">Cara Belajar</a><a href="#guru">Untuk Guru</a><a href="#peringkat">Peringkat</a></nav>
     <div class="row"><a class="btn btn-ghost btn-sm" href="#/masuk?t=guru">Masuk Guru</a><a class="btn btn-primary btn-sm shine" href="#/masuk">Masuk Siswa</a></div>
   </div></header>
   <section class="hero">
@@ -32,7 +32,7 @@ Views.landing = function (el) {
     </div>
   </section>
   <section class="container"><div class="grid g4" style="margin-top:-36px;position:relative;z-index:5">
-    ${[[3, 'Sub-bab', ''], [13, 'Aktivitas Berurutan', ''], [4, 'Kelas (7A–7D)', ''], [72, 'KKM Sumatif', '']].map(s => `<div class="card stat glow rv"><b data-count="${s[0]}">0</b><span class="muted">${s[1]}</span></div>`).join('')}
+    ${[[3, 'Sub-bab', ''], [13, 'Aktivitas Berurutan', ''], [3, 'Kelas (7A–7C)', ''], [72, 'KKM Sumatif', '']].map(s => `<div class="card stat glow rv"><b data-count="${s[0]}">0</b><span class="muted">${s[1]}</span></div>`).join('')}
   </div></section>
   <section class="sec" id="identitas" style="padding-bottom:20px"><div class="container"><div class="rv">${Stu.identitas(PV.bab, true)}</div></div></section>
   <section class="sec" id="modul"><div class="container">
@@ -50,47 +50,32 @@ Views.landing = function (el) {
     <div class="grid g3">${ALUR.map((a, i) => `<div class="card step glow rv"><div class="n">${i + 1}</div><div style="font-size:34px">${a[0]}</div><h4>${a[1]}</h4><p class="muted small">${a[2]}</p></div>`).join('')}</div>
   </div></section>
   <section class="sec" id="guru"><div class="container grid g2" style="align-items:center">
-    <div class="rv"><span class="badge">👩‍🏫 Untuk Guru</span><h2 class="mt">Pantau 4 Kelas dalam Satu Dashboard</h2><p class="muted mt">Lihat progres setiap siswa, nilai resmi per sub-bab, siapa yang perlu remedial, lalu buka kunci aktivitas secara manual — lengkap dengan catatan audit.</p>
+    <div class="rv"><span class="badge">👩‍🏫 Untuk Guru</span><h2 class="mt">Pantau Semua Kelas dalam Satu Dashboard</h2><p class="muted mt">Lihat progres setiap siswa, nilai resmi per sub-bab, siapa yang perlu remedial, lalu buka kunci aktivitas secara manual — lengkap dengan catatan audit.</p>
       <div class="grid g2 mt2" style="gap:12px">${FITUR.map(f => `<div class="card glow" style="padding:14px"><div style="font-size:26px">${f[0]}</div><b>${f[1]}</b><p class="muted small">${f[2]}</p></div>`).join('')}</div>
       <a class="btn btn-primary mt2 shine" href="#/pg/overview">📊 Lihat Pratinjau Dashboard Guru</a></div>
     <div class="card rv" style="padding:24px"><div class="row between"><b>Performa Antar Sub-bab</b><span class="badge">KKM 72</span></div>
       ${[['Internet & Mesin Pencari', 86], ['Literasi Digital', 81], ['Ancaman & Proteksi Data', 84]].map(b => `<div class="mt"><div class="row between small"><span>${b[0]}</span><b>${b[1]}</b></div><div class="bar"><i data-w="${b[1]}%"></i></div></div>`).join('')}
       <div class="row mt2"><div class="card" style="flex:1;text-align:center;padding:14px;background:#e9f9e4"><b style="font:800 28px var(--ff-h);color:var(--green-d)">27</b><div class="small">Tuntas</div></div><div class="card" style="flex:1;text-align:center;padding:14px;background:var(--danger-s)"><b style="font:800 28px var(--ff-h);color:var(--danger)">5</b><div class="small">Remedial</div></div></div></div>
   </div></section>
-  <section class="sec" id="testi" style="background:linear-gradient(180deg,#fff,#f4efff)"><div class="container">
-    <h2 class="center rv">Kata Mereka</h2><p class="lead rv">Kartu berputar sendiri — arahkan kursor untuk melihatnya menyala, klik untuk membaca selengkapnya.</p>
-    <div class="grid g3" id="testi-grid"></div><p class="center small muted mt2">* Contoh testimoni. Ganti lewat sheet "Testimoni" di Google Sheets.</p>
+  <section class="sec" id="peringkat" style="background:linear-gradient(180deg,#fff,#f4efff)"><div class="container">
+    <h2 class="center rv">🏆 Papan Peringkat Penjelajah Digital</h2><p class="lead rv">Siapa yang nilainya paling tinggi? Kerjakan asesmenmu dengan sungguh-sungguh — tampilan ini otomatis berubah saat nilai masuk!</p>
+    <div class="card rv" style="padding:22px"><div id="rank-box"></div></div>
   </div></section>
   <section class="container sec"><div class="cta-band rv"><div class="blob" style="width:240px;height:240px;background:#fff;opacity:.15;left:-60px;top:-60px"></div>
     <h2>Siap menjadi Penjelajah Digital yang Aman?</h2><p style="opacity:.9;margin:10px 0 24px">Masuk dengan NIS atau kode akses dari gurumu.</p>
     <a class="btn btn-lg shine" style="background:#fff;color:var(--primary-d)" href="#/masuk">▶ Mulai Sekarang</a></div></section>
   <footer><div class="container row between wrap"><div><b style="color:#fff;font-family:var(--ff-h)">Menjelajahi Dunia Digital dengan Aman</b><div class="small">Koding dan Kecerdasan Artifisial · Kelas VII · Fase D · Guru: ${esc(PV.bab.guru)}</div></div>
     <div class="row"><button class="btn btn-sm" style="background:#2e2b57;color:#fff" data-act="lup">🔍 Kursor Lup: nyala/mati</button></div></div></footer>`;
-  renderTesti(PV.testi);
   $('[data-act=lup]', el).onclick = () => Lup.toggle();
-  initHero(el); initFlip(el); afterRender(el);
-  api('app.boot').then(r => { if (r.success && r.data.testimoni && r.data.testimoni.length && location.hash.replace('#', '') === '/') { renderTesti(r.data.testimoni); initFlip(el.querySelector('#testi-grid')); } });
+  initHero(el); afterRender(el); Rank.load($('#rank-box', el));
 };
-function renderTesti(list) {
-  const g = $('#testi-grid'); if (!g) return;
-  g.innerHTML = list.map((t, i) => `<div class="flipwrap" data-i="${i}"><div class="flip">
-    <div class="face"><div class="row"><div class="avatar" style="background:${esc(t.warna)}">${esc(t.avatar)}</div><div><b>${esc(t.nama)}</b><div class="small muted">${esc(t.peran)}</div></div></div>
-      <div class="stars">${'★'.repeat(t.bintang || 5)}${'☆'.repeat(5 - (t.bintang || 5))}</div><h4>“${esc(t.judul)}”</h4><span class="small muted">Klik untuk membaca ↻</span></div>
-    <div class="face back"><div class="stars">${'★'.repeat(t.bintang || 5)}</div><p style="display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden">${esc(t.teks)}</p><b>— ${esc(t.nama)}</b><span class="small" style="opacity:.85">Klik untuk tampilan lengkap ⤢</span></div></div></div>`).join('');
-  $$('.flipwrap', g).forEach(w => w.onclick = () => {
-    const t = list[+w.dataset.i];
-    const m = modal(`<div class="row"><div class="avatar" style="background:${esc(t.warna)}">${esc(t.avatar)}</div><div><h3>${esc(t.nama)}</h3><div class="muted small">${esc(t.peran)}</div></div></div><div class="stars mt" style="font-size:22px">${'★'.repeat(t.bintang || 5)}${'☆'.repeat(5 - (t.bintang || 5))}</div><h4 class="mt">“${esc(t.judul)}”</h4><p class="mt" style="font-size:17px">${esc(t.teks)}</p>`);
-    Confetti.go(40);
-  });
-}
-
 Views.masuk = function (el, q) {
-  let tab = q && q.t === 'guru' ? 'guru' : 'siswa', kelas = '7A';
+  let tab = q && q.t === 'guru' ? 'guru' : 'siswa', kelas = '7A', daftarKelas = ['7A', '7B', '7C'];
   const draw = () => {
     el.innerHTML = `<div class="auth"><div class="card auth-card pop">
       <a href="#/" class="logo" style="justify-content:center;margin-bottom:14px"><img src="assets/img/logo.svg" alt="">Dunia Digital Aman</a>
       <div class="tabs"><button data-t="siswa" class="${tab === 'siswa' ? 'on' : ''}">🎒 Siswa</button><button data-t="guru" class="${tab === 'guru' ? 'on' : ''}">👩‍🏫 Guru</button></div>
-      ${tab === 'siswa' ? `<div class="mt2"><label>Pilih Kelas</label><div class="chips">${['7A', '7B', '7C', '7D'].map(k => `<button class="chip ${k === kelas ? 'on' : ''}" data-k="${k}">${k}</button>`).join('')}</div>
+      ${tab === 'siswa' ? `<div class="mt2"><label>Pilih Kelas</label><div class="chips">${daftarKelas.map(k => `<button class="chip ${k === kelas ? 'on' : ''}" data-k="${k}">${k}</button>`).join('')}</div>
         <label class="mt">NIS atau Kode Akses</label><input id="kode" placeholder="contoh: 7A-04" autocomplete="off" autocapitalize="characters"></div>`
       : `<div class="mt2"><label>Nama Pengguna</label><input id="usr" autocomplete="username" value="guru"><label class="mt">Kata Sandi</label><input id="pw" type="password" autocomplete="current-password"></div>`}
       <button class="btn btn-primary btn-block btn-lg shine mt2" id="go">Masuk ▶</button>
@@ -111,4 +96,5 @@ Views.masuk = function (el, q) {
     const f = $('input', el); if (f && matchMedia('(pointer:fine)').matches) f.focus();
   };
   draw(); warmUp();
+  api('app.boot').then(r => { if (r.success && r.data.kelas && r.data.kelas.length && !($('#kode', el) || {}).value) { daftarKelas = r.data.kelas; if (daftarKelas.indexOf(kelas) < 0) kelas = daftarKelas[0]; if (tab === 'siswa') draw(); } });
 };

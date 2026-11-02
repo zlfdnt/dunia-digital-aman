@@ -6,7 +6,7 @@ const Demo = {
       res(f ? { success: true, data: f.call(this, d) } : { success: false, message: 'Mode pratinjau hanya untuk melihat tampilan — data tidak bisa diubah. Masuk dengan akunmu untuk mencoba fitur ini.' });
     }, 140));
   },
-  kelasList: [{ kelas: '7A', n: 32 }, { kelas: '7B', n: 32 }, { kelas: '7C', n: 30 }, { kelas: '7D', n: 31 }],
+  kelasList: [{ kelas: '7A', n: 23 }, { kelas: '7B', n: 22 }, { kelas: '7C', n: 2 }],
   S: [
     { id: 'd1', nama: 'Ahmad Fauzan', nis: '7A-01', progres: 68, fase: 'Sub-bab 2', sub: [78, 72, null], rata: 75.0, sumatif: null, status: 'SEDANG', macet: null },
     { id: 'd2', nama: 'Budi Pratama', nis: '7A-04', progres: 100, fase: 'Tuntas', sub: [88, 85, 92], rata: 88.3, sumatif: 88, status: 'TUNTAS', macet: null },
@@ -16,7 +16,13 @@ const Demo = {
     { id: 'd6', nama: 'Siti Nurhaliza', nis: '7A-28', progres: 100, fase: 'Tuntas', sub: [90, 95, 88], rata: 91.0, sumatif: 94, status: 'TUNTAS', macet: null },
     { id: 'd7', nama: 'Zahra Aulia', nis: '7A-32', progres: 100, fase: 'Tuntas', sub: [85, 84, 86], rata: 85.0, sumatif: 82, status: 'TUNTAS', macet: null }
   ],
-  app_boot() { return { app: { nama: 'Menjelajahi Dunia Digital dengan Aman', kkm: 72 }, testimoni: PV.testi, kelas: ['7A', '7B', '7C', '7D'] }; },
+  app_boot() { return { app: { nama: 'Menjelajahi Dunia Digital dengan Aman', kkm: 72 }, kelas: ['7A', '7B', '7C'] }; },
+  guru_soalAmbil(x) {
+    const daftar = PV.akt.filter(a => /Formatif|Sumatif/.test(a.jenis)), a = daftar.find(z => z.id === x.id) || daftar[0];
+    return { daftar: daftar.map(z => ({ id: z.id, judul: z.judul, jenis: z.jenis })), id: a.id, judul: a.judul, jenis: a.jenis, waktuMenit: a.data.waktuMenit, pengerjaan: 0,
+      soal: a.data.soal.map(q => Object.assign({ jenis: 'PG' }, q, { kunci: q.jenis === 'PGK' ? ['A'] : q.jenis === 'KAT' ? q.pernyataan.map(() => 0) : 'A', analisis: '' })) };
+  },
+  app_peringkat() { return { kosong: true, top: [], juaraKelas: [], perAsesmen: [], sampai: '' }; },
   siswa_beranda() {
     const st = { 'S1-M': 'selesai', 'S1-L': 'selesai', 'S1-K': 'selesai', 'S1-F': 'selesai', 'S2-M': 'selesai', 'S2-L': 'terbuka' };
     const mk = a => ({ id: a.id, jenis: a.jenis, judul: a.judul, menit: a.menit, status: st[a.id] || 'terkunci', berikutnya: a.id === 'S2-L', oleh: '' });
@@ -65,7 +71,7 @@ const Demo = {
     const st = {}; PV.akt.forEach(a => st[a.id] = /^S1|S2-M/.test(a.id) ? 'selesai' : a.id === 'S2-L' ? 'terbuka' : 'terkunci');
     return { kelas: '7A', kelasList: this.kelasList, aktivitas: PV.akt, subbab: PV.subbab, siswa: this.S.map(s => ({ id: s.id, nama: s.nama, nis: s.nis, progres: s.progres, macet: !!s.macet })),
       detail: { id: 'd5', nama: 'Rani Maharani', nis: '7A-25', progres: 45, macet: this.S[4].macet, status: st },
-      stat: { minggu: 8, perKelas: { '7A': 3, '7B': 2, '7C': 1, '7D': 2 }, kategori: { 'Kendala Gawai': 5, 'Sakit/Izin': 2, 'Remedial Mandiri': 1 }, perluIntervensi: ['Rani M.', 'Galih P.', 'Dita S.'] },
+      stat: { minggu: 8, perKelas: { '7A': 3, '7B': 2, '7C': 1 }, kategori: { 'Kendala Gawai': 5, 'Sakit/Izin': 2, 'Remedial Mandiri': 1 }, perluIntervensi: ['Rani M.', 'Galih P.', 'Dita S.'] },
       riwayat: [
         { waktu: '2026-10-14 10:48:00', guru: PV.bab.guru, siswa: 'Rani Maharani', kelas: '7A', aktivitas: ['Lab: Cek Fakta Kuota Gratis'], cakupan: 'Per Siswa', kategori: 'Kendala Gawai', alasan: 'Browser lab freeze saat simpan data eksperimen.' },
         { waktu: '2026-10-14 09:15:00', guru: PV.bab.guru, siswa: 'Dimas Anggara', kelas: '7A', aktivitas: ['Asesmen Formatif Sub-bab 1'], cakupan: 'Per Siswa', kategori: 'Remedial Mandiri', alasan: 'Remedial mandiri terjadwal di lab komputer.' },

@@ -12,11 +12,14 @@ Stu.shell = function (el, ctx, o) {
       <a class="avatar-sm" href="${ctx.base}/profil" title="${esc(nama)}">${nama ? esc(initials(nama)) : '🙂'}</a></div></header>
     <main class="s-main" id="sm"></main>
     <nav class="s-nav">${nav.map(n => `<a href="${ctx.base}/${n[0]}" class="${o.tab === n[0] ? 'on' : ''}"><span class="i">${n[1]}</span>${n[2]}</a>`).join('')}</nav>`;
-  return $('#sm', el);
+  Stu.cur = { m: $('#sm', el), base: ctx.base };
+  return Stu.cur.m;
 };
 Stu.skeleton = '<div class="skeleton"></div><div class="skeleton" style="height:140px"></div><div class="skeleton"></div>';
+Stu.errCard = base => `<div class="card center pop"><div style="font-size:48px">😕</div><h3>Belum bisa memuat</h3><p class="muted mt">Server sedang lambat atau koneksi terputus. Data belajarmu aman.</p><div class="row mt2" style="justify-content:center"><button class="btn btn-primary" onclick="window.refresh()">↻ Coba lagi</button><a class="btn btn-ghost" href="${base}/beranda">Ke Beranda</a></div></div>`;
 Stu.load = function (cb, onErr) {
-  swr('siswa.beranda', {}, (d, cached, r) => { if (!d) { toast((r && r.message) || 'Gagal memuat', 'err'); onErr && onErr(); return; } Stu.data = d; cb(d, cached); }, 15000);
+  const cur = Stu.cur, ee = onErr; onErr = e => { if (cur && cur.m.isConnected) cur.m.innerHTML = Stu.errCard(cur.base); ee && ee(e); };
+  swr('siswa.beranda', {}, (d, cached, r) => { if (!d) { toast((r && r.message) || 'Gagal memuat', 'err'); onErr && onErr(); return; } Stu.data = d; try { cb(d, cached); } catch (e) { console.error(e); onErr && onErr(e); } }, 15000);
 };
 Stu.actCard = function (a, base) {
   const cls = a.status === 'selesai' ? 'selesai' : a.berikutnya ? 'next' : a.status === 'terkunci' ? 'terkunci' : '';
@@ -39,16 +42,19 @@ Views.sBeranda = function (el, ctx) {
     const pct = cur ? Math.round(cur.selesai / cur.total * 100) : 0;
     m.innerHTML = `
     <div class="hero-card pop"><div class="row between"><div><h2>Halo, ${esc(d.siswa.nama.split(' ')[0])}! 👋</h2><div style="opacity:.9">Kelas ${esc(d.siswa.kelas)} · ${esc(d.siswa.nis)}</div></div><span class="badge" style="background:rgba(255,255,255,.22);color:#fff">⭐ Level ${d.level}</span></div>
-      <div class="hr" style="background:rgba(255,255,255,.25)"></div><div class="small" style="opacity:.92">📚 ${esc((d.bab.mapel || '').replace(/\s*\(.*\)/, ''))} · Kelas ${esc(d.bab.kelas || 'VII')} · Fase ${esc(d.bab.fase || 'D')}<br>👩‍🏫 Guru: ${esc(d.bab.guru || '')}</div><div class="hr" style="background:rgba(255,255,255,.25)"></div><div class="row between wrap"><span>🏆 Target Belajar Pekan Ini</span><span class="badge" style="background:#fff;color:var(--primary-d)">Bab 2: ${d.progres.persen}% Tuntas</span></div></div>
+      <div class="hr" style="background:rgba(255,255,255,.25)"></div><div class="small" style="opacity:.95;line-height:1.6">📚 ${esc(PV.bab.mapel)} · Kelas ${esc(PV.bab.kelas)} · Fase ${esc(PV.bab.fase)}<br>👩‍🏫 Guru: ${esc(PV.bab.guru)}</div><div class="hr" style="background:rgba(255,255,255,.25)"></div><div class="row between wrap"><span id="juara-mini">🏆 Juara sementara: <b>memuat…</b></span><span class="badge" style="background:#fff;color:var(--primary-d)">Bab 2: ${d.progres.persen}% Tuntas</span></div></div>
+    <div class="mt">${Stu.identitas(PV.bab, false)}</div>
     ${d.bukaGuru ? `<div class="card warm mt fadeup"><div class="row" style="align-items:flex-start"><div class="icon-circle">🔓</div><div><span class="badge">Akses Dibuka Guru 🔓</span> <span class="small muted">${waktu(d.bukaGuru.waktu)}</span><p class="mt"><b>${esc(d.bukaGuru.oleh)}</b> telah membuka akses <b>${esc(d.bukaGuru.aktivitas.slice(0, 2).join(', '))}${d.bukaGuru.aktivitas.length > 2 ? ' dan lainnya' : ''}</b>. ${esc(d.bukaGuru.alasan)} Silakan lanjutkan belajar!</p><span class="badge b-ok mt">🛡️ Nilai tetap dihitung murni dari hasil pengerjaanmu</span></div></div></div>` : ''}
     ${d.tuntasBab ? `<div class="card mt" style="background:#e9f9e4;border-color:var(--green)"><div class="row"><div class="icon-circle" style="background:var(--green);color:#fff">🏅</div><div><b>Bab Tuntas — Semua Materi Terbuka untuk Dipelajari Ulang!</b><div class="small muted">Tidak ada lagi gembok. Buka aktivitas mana pun kapan saja.</div></div></div></div>` : ''}
     ${cur ? `<div class="card mt glow"><div class="row"><div class="icon-circle">${cur.ikon}</div><div class="grow"><h3 style="font-size:19px">${esc(cur.judul)}</h3><div class="small muted">${esc(cur.deskripsi)}</div></div><span class="badge">${pct}% Selesai</span></div><div class="bar mt"><i data-w="${pct}%"></i></div></div>
     <div class="row between mt2"><b class="small muted" style="letter-spacing:.08em">ALUR BELAJAR MANDIRI</b><span class="small muted">${cur.selesai} dari ${cur.total} Tuntas</span></div>
     <div class="timeline mt">${cur.aktivitas.map(a => Stu.actCard(a, ctx.base)).join('')}</div>` : ''}
     ${d.sumatif && d.sumatif.status !== 'terkunci' && (!cur || cur.id !== 'SUM') ? `<div class="mt">${Stu.actCard(d.sumatif, ctx.base)}</div>` : ''}
+    <div class="card mt2" id="rankc"><h3>🏆 Papan Peringkat</h3><div class="mt" id="rank-box"></div></div>
     <div class="card mt row"><div class="icon-circle">🎧</div><div><b>Koneksi Tetap Stabil?</b><div class="small muted">Bila ada kendala teknis saat lab, lapor ke gurumu. Progresmu tersimpan otomatis.</div></div></div>
     ${nxt ? `<div class="sticky-cta no-print"><a class="btn btn-primary btn-lg shine pulse-glow" style="justify-content:space-between;width:100%;text-align:left" href="${ctx.base}/akt/${nxt.id}"><span>🚀 ${d.progres.persen === 0 ? 'Mulai Petualangan' : 'Lanjutkan'}<br><small style="font-weight:600;opacity:.9">${esc(nxt.judul)}</small></span><span>▶</span></a></div>` : ''}`;
     Stu.lockTap(m); afterRender(m);
+    Rank.load($('#rank-box', m)).then(rk => { const j = $('#juara-mini', m); if (!j) return; const e = rk && !rk.kosong && rk.top[0]; j.innerHTML = e ? `🏆 Juara sementara: <b>${esc(e.nama)}</b> (${esc(e.kelas)}) · ${e.rata}` : '🏆 Belum ada juara — jadilah yang pertama!'; });
   }, () => { m.innerHTML = '<div class="card center"><p>Gagal memuat data.</p><a class="btn btn-primary mt" href="' + ctx.base + '/beranda">Coba lagi</a></div>'; });
 };
 
@@ -113,8 +119,19 @@ Views.sProfil = function (el, ctx) {
 // ---------------- AKTIVITAS ----------------
 Views.sAkt = async function (el, ctx) {
   const id = ctx.params[0], m = Stu.shell(el, ctx, { tab: 'peta', title: 'Memuat…', back: ctx.base + '/peta' }); m.innerHTML = Stu.skeleton;
-  const r = await api('aktivitas.baca', { id });
-  if (!r.success) { m.innerHTML = `<div class="card center pop"><div style="font-size:56px">🔒</div><h3>Belum Bisa Dibuka</h3><p class="muted mt">${esc(r.message)}</p><a class="btn btn-primary mt" href="${ctx.base}/peta">Kembali ke Peta Belajar</a></div>`; return; }
+  const kunciCard = msg => `<div class="card center pop"><div style="font-size:56px">🔒</div><h3>Belum Bisa Dibuka</h3><p class="muted mt">${esc(msg)}</p><a class="btn btn-primary mt" href="${ctx.base}/peta">Kembali ke Peta Belajar</a></div>`;
+  const lokal = PV.akt.find(a => a.id === id && ['Materi', 'Lab', 'Kegiatan'].indexOf(a.jenis) >= 0);
+  let r;
+  if (lokal) {                                   // materi/lab/kegiatan: tampil INSTAN dari berkas lokal
+    const semua = Stu.data ? Stu.data.subbab.flatMap(s => s.aktivitas) : [], st = semua.find(a => a.id === id);
+    if (st && st.status === 'terkunci') { m.innerHTML = kunciCard('Selesaikan aktivitas sebelumnya dulu ya.'); return; }
+    const nx = PV.akt[PV.akt.indexOf(lokal) + 1];
+    r = { success: true, data: { meta: { id: lokal.id, sub: lokal.sub, urut: lokal.urut, jenis: lokal.jenis, judul: lokal.judul, menit: lokal.menit }, data: lokal.data, status: 'terbuka', punyaResmi: false, selanjutnya: nx ? { id: nx.id, judul: nx.judul } : null } };
+    if (!API.demo) api('aktivitas.baca', { id, ringan: true }).then(x => { if (!x.success && x.code === 'LOCKED' && location.hash.indexOf('/akt/' + id) > 0) { clearTimers(); m.innerHTML = kunciCard(x.message); } });   // server tetap menjaga kunci
+  } else {
+    r = await api('aktivitas.baca', { id });
+    if (!r.success) { m.innerHTML = kunciCard(r.message) + '<div class="center mt"><button class="btn btn-ghost btn-sm" onclick="window.refresh()">↻ Coba lagi</button></div>'; return; }
+  }
   const A = r.data, meta = A.meta, sub = (Stu.data && Stu.data.subbab.find(s => s.id === meta.sub)) || (PV.subbab.find(s => s.id === meta.sub)) || { judul: 'Uji Kompetensi', ikon: '🏆' };
   $('.s-top h4', el).textContent = meta.judul; $('.s-top .muted', el).textContent = JN[meta.jenis] + ' · ' + (sub.judul || '');
   const t0 = Date.now(), dur = () => Math.round((Date.now() - t0) / 1000);
@@ -177,9 +194,9 @@ const Soal = {
   }
 };
 Stu.identitas = function (b, open) {
-  b = b || PV.bab;
+  b = PV.bab;                                   // identitas selalu dari berkas lokal (tidak bergantung isi Sheet)
   const row = (k, v) => `<div class="idc"><small>${k}</small><b>${esc(v)}</b></div>`;
-  return `<details class="card" ${open ? 'open' : ''}><summary style="cursor:pointer;list-style:none"><div class="row between"><div class="row"><span class="icon-circle">🏫</span><div><h3 style="font-size:19px">Identitas Pembelajaran</h3><div class="small muted">${esc(b.mapel)} · Kelas ${esc(b.kelas)} · Fase ${esc(b.fase)}</div></div></div><span class="badge">Lihat / tutup ▾</span></div></summary>
+  return `<details class="card" ${open ? 'open' : ''}><summary style="cursor:pointer;list-style:none"><div class="row between"><div class="row"><span class="icon-circle">🏫</span><div><h3 style="font-size:19px">Identitas Pembelajaran</h3><div class="small muted">${esc(b.mapel)} · Kelas ${esc(b.kelas)} · Fase ${esc(b.fase)}<br>Guru: ${esc(b.guru)}</div></div></div><span class="badge">Lihat / tutup ▾</span></div></summary>
     <div class="idgrid mt">${row('Mata Pelajaran', b.mapel)}${row('Kelas', b.kelas)}${row('Fase', 'Fase ' + b.fase + ' (' + b.jenjang + ')')}${row('Semester', b.semester)}${row('Bab', b.bab + ': ' + b.judul)}${row('Guru Pengampu', b.guru)}</div>
     <div class="mt"><b>🎯 Tujuan Pembelajaran</b><ol class="tp-list">${b.tujuan.map(t => `<li>${esc(t)}</li>`).join('')}</ol></div>
     <div class="card mt" style="background:var(--lav2);padding:14px"><b>📜 Capaian Pembelajaran — Elemen ${esc(b.cp.elemen)}</b><p class="small mt">${esc(b.cp.teks)}</p><div class="tiny muted mt">Sumber: ${esc(b.cp.sumber)}</div></div>
@@ -272,8 +289,23 @@ Stu.reflBind = (root, st, upd) => {
   $('#rt', root).oninput = e => { st.teks = e.target.value; upd(); };
 };
 
+// ---- komponen jawaban bersama (formatif & TKA) ----
+Stu.qBody = (q, v) => {
+  const j = q.jenis || 'PG'; let h = '';
+  if (j === 'PG') h = Object.keys(q.opsi).map(k => `<button class="tka-opt ${v === k ? 'on' : ''}" data-k="${k}"><span class="mk">${k}</span><span>${rich(q.opsi[k])}</span></button>`).join('');
+  else if (j === 'PGK') h = Object.keys(q.opsi).map(k => `<button class="tka-opt cb ${v && v.indexOf(k) >= 0 ? 'on' : ''}" data-k="${k}"><span class="mk">${v && v.indexOf(k) >= 0 ? '✓' : ''}</span><span>${rich(q.opsi[k])}</span></button>`).join('');
+  else h = `<div class="tb-wrap"><table class="tka-tb"><thead><tr><th>Pernyataan</th>${q.kolom.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${q.pernyataan.map((p, i) => `<tr><td>${rich(p)}</td>${[0, 1].map(c => `<td class="c"><button class="tka-rad ${v && v[i] === c ? 'on' : ''}" data-i="${i}" data-c="${c}" aria-label="${esc(q.kolom[c])}">${v && v[i] === c ? '●' : ''}</button></td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  return h;
+};
+Stu.qBind = (root, q, ans, rerender) => {
+  const j = q.jenis || 'PG';
+  $$('.tka-opt', root).forEach(b => b.onclick = () => { const k = b.dataset.k; if (j === 'PG') ans[q.no] = k; else { const a = (ans[q.no] || []).slice(); const ix = a.indexOf(k); ix >= 0 ? a.splice(ix, 1) : a.push(k); ans[q.no] = a.sort(); } rerender(); });
+  $$('.tka-rad', root).forEach(b => b.onclick = () => { const a = (ans[q.no] || q.pernyataan.map(() => null)).slice(); a[+b.dataset.i] = +b.dataset.c; ans[q.no] = a; rerender(); });
+};
+Stu.qLengkap = (q, v) => { const j = q.jenis || 'PG'; if (v === undefined || v === null) return false; if (j === 'PG') return !!v; if (j === 'PGK') return v.length > 0; return v.length === q.pernyataan.length && v.every(x => x === 0 || x === 1); };
+
 // =====================================================================
-//  ASESMEN FORMATIF (pilihan ganda + refleksi)
+//  ASESMEN FORMATIF (semua bentuk soal + refleksi)
 // =====================================================================
 Stu.asesmen = function (m, ctx, A, dur, done) {
   const S = A.data.soal, meta = A.meta, jw = {}, st = { rasa: '', teks: '' }; let sending = false;
@@ -281,15 +313,16 @@ Stu.asesmen = function (m, ctx, A, dur, done) {
       <div class="row between mt"><div class="bar grow"><i id="pb" style="width:0"></i></div><span class="badge" id="pc">Terjawab 0 dari ${S.length}</span></div></div>
     ${A.punyaResmi ? `<div class="card mt row" style="background:#e9f9e4;border-color:var(--green)"><span style="font-size:26px">🔁</span><div class="small"><b>Mode Latihan Ulang.</b> Kamu sudah punya Nilai Resmi. Hasil latihan ini <b>tidak mengubah</b> nilai resminya.</div></div>` : `<div class="card mt row" style="background:var(--lav2)"><span style="font-size:26px">⭐</span><div class="small"><b>Pengerjaan pertama = Nilai Resmi.</b> Kerjakan dengan teliti. Setelah itu kamu boleh latihan ulang sepuasnya.</div></div>`}
     ${S.map(q => `<section class="mt2" data-q="${q.no}">${q.kasus ? `<div class="card warm"><div class="row"><span class="icon-circle" style="background:#fff">📖</span><b class="small">Kasus Cerita: ${esc(q.topik)}</b></div><p class="mt">${rich(q.kasus)}</p></div>` : `<div class="small muted" style="font-weight:800;letter-spacing:.05em">SOAL ${q.no} · ${esc(q.topik.toUpperCase())}</div>`}${Soal.img(q.gambar)}
-      <div class="card mt" style="padding:16px"><b style="font-size:16px">${q.no}. ${rich(q.tanya)}</b></div><div class="mt">${['A', 'B', 'C', 'D'].map(k => `<button class="opt" data-q="${q.no}" data-o="${k}"><span class="dot">${k}</span><span>${esc(q.opsi[k])}</span></button>`).join('')}</div></section>`).join('')}
+      <div class="card mt" style="padding:16px"><b style="font-size:16px">${q.no}. ${rich(q.tanya)}</b></div><p class="small muted mt">${({ PG: 'Pilih satu jawaban yang paling tepat.', PGK: 'Pilih semua jawaban yang benar.', KAT: 'Tentukan jawaban untuk setiap pernyataan.' })[q.jenis || 'PG']}</p><div class="mt" data-box="${q.no}"></div></section>`).join('')}
     <div class="card mt2">${Stu.reflHtml()}<div class="row mt small muted" id="lk" style="background:var(--lav2);border-radius:14px;padding:12px">🔒 <span>Pilih jawaban kuis dan isi refleksi (minimal 20 karakter) untuk melanjutkan.</span></div></div>
     <button class="btn btn-primary btn-block btn-lg mt2 off" id="kirim">${API.demo ? 'Mode pratinjau — pengiriman dinonaktifkan' : 'Kirim Refleksi & Lihat Nilai ' + (A.punyaResmi ? 'Latihan' : 'Resmi') + ' →'}</button>`;
   const upd = () => {
-    const n = Object.keys(jw).length, ok = n === S.length && st.rasa && st.teks.trim().length >= 20 && !API.demo;
+    const n = S.filter(q => Stu.qLengkap(q, jw[q.no])).length, ok = n === S.length && st.rasa && st.teks.trim().length >= 20 && !API.demo;
     $('#pb', m).style.width = Math.round(n / S.length * 100) + '%'; $('#pc', m).textContent = 'Terjawab ' + n + ' dari ' + S.length; $('#cc', m).textContent = Math.min(st.teks.trim().length, 999) + '/20';
     const k = $('#kirim', m); k.classList.toggle('off', !ok); k.classList.toggle('btn-primary', !!ok); k.classList.toggle('shine', !!ok); $('#lk', m).style.display = ok || API.demo ? 'none' : 'flex';
   };
-  $$('.opt[data-q]', m).forEach(b => b.onclick = () => { jw[b.dataset.q] = b.dataset.o; $$('.opt[data-q="' + b.dataset.q + '"]', m).forEach(x => x.classList.toggle('on', x === b)); upd(); });
+  const drawQ = q => { const box = $('[data-box="' + q.no + '"]', m); box.innerHTML = Stu.qBody(q, jw[q.no]); Stu.qBind(box, q, jw, () => { drawQ(q); upd(); }); };
+  S.forEach(drawQ);
   Stu.reflBind(m, st, upd);
   const t0 = Date.now(); _timers.push(setInterval(() => { const t = $('#tm', m); if (t) t.textContent = '⏱ ' + mmss(Math.round((Date.now() - t0) / 1000)); }, 1000));
   $('#kirim', m).onclick = async e => {
@@ -333,13 +366,7 @@ Stu.tka = function (m, ctx, A, dur, done) {
   const sisa = () => Math.max(0, Math.round((endAt - Date.now()) / 1000));
   const startTick = () => { tick = setInterval(() => { const x = sisa(), v = $('#tkav', m); if (v) { v.textContent = mmss(x); $('#tkat', m).classList.toggle('warn', x <= 300); } if (x <= 0) { stopTick(); phase = 'refleksi'; modal('<h3>⏰ Waktu Habis</h3><p class="mt">Waktu pengerjaan telah selesai. Jawabanmu akan dikumpulkan. Lanjutkan dengan mengisi refleksi.</p><div class="mt2" style="text-align:right"><button class="btn btn-primary" id="mo">Lanjut ke Refleksi</button></div>', () => refl()); $('#mo').onclick = () => $('.modal-x').click(); } }, 1000); _timers.push(tick); };
   // ---------- 2. ujian ----------
-  const body = q => {
-    const j = q.jenis || 'PG', v = ans[q.no]; let h = '';
-    if (j === 'PG') h = Object.keys(q.opsi).map(k => `<button class="tka-opt ${v === k ? 'on' : ''}" data-k="${k}"><span class="mk">${k}</span><span>${rich(q.opsi[k])}</span></button>`).join('');
-    else if (j === 'PGK') h = Object.keys(q.opsi).map(k => `<button class="tka-opt cb ${v && v.indexOf(k) >= 0 ? 'on' : ''}" data-k="${k}"><span class="mk">${v && v.indexOf(k) >= 0 ? '✓' : ''}</span><span>${rich(q.opsi[k])}</span></button>`).join('');
-    else h = `<table class="tka-tb"><thead><tr><th>Pernyataan</th>${q.kolom.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${q.pernyataan.map((p, i) => `<tr><td>${rich(p)}</td>${[0, 1].map(c => `<td class="c"><button class="tka-rad ${v && v[i] === c ? 'on' : ''}" data-i="${i}" data-c="${c}" aria-label="${esc(q.kolom[c])}">${v && v[i] === c ? '●' : ''}</button></td>`).join('')}</tr>`).join('')}</tbody></table>`;
-    return h;
-  };
+  const body = q => Stu.qBody(q, ans[q.no]);
   const exam = () => {
     const q = S[cur], j = q.jenis || 'PG';
     const info = { PG: 'Pilih satu jawaban yang paling tepat.', PGK: 'Pilih semua jawaban yang benar (lebih dari satu).', KAT: 'Tentukan jawaban untuk setiap pernyataan.' }[j];
@@ -351,8 +378,7 @@ Stu.tka = function (m, ctx, A, dur, done) {
         <div class="tka-leg"><span><i style="background:var(--green)"></i>Sudah dijawab</span><span><i style="background:var(--amber)"></i>Ragu-ragu</span><span><i style="background:#fff"></i>Belum dijawab</span></div>
         <div class="tka-fs">Ukuran huruf: <button id="fm">A−</button><button id="fp">A+</button></div><button class="btn btn-green btn-block mt2" id="fn2">Selesai & Kirim</button></aside></div></div>`;
     const v = sisa(); $('#tkav', m).textContent = mmss(v); $('#tkat', m).classList.toggle('warn', v <= 300);
-    $$('.tka-opt', m).forEach(b => b.onclick = () => { const k = b.dataset.k; if (j === 'PG') ans[q.no] = k; else { const a = ans[q.no] || []; const ix = a.indexOf(k); ix >= 0 ? a.splice(ix, 1) : a.push(k); ans[q.no] = a.slice().sort(); } exam(); });
-    $$('.tka-rad', m).forEach(b => b.onclick = () => { const a = ans[q.no] || q.pernyataan.map(() => null); a[+b.dataset.i] = +b.dataset.c; ans[q.no] = a.slice(); exam(); });
+    Stu.qBind(m, q, ans, exam);
     $('#rg', m).onchange = e => { e.target.checked ? ragu[q.no] = 1 : delete ragu[q.no]; exam(); };
     $('#pv', m).onclick = () => { cur--; exam(); scrollTo(0, 0); }; const nx = $('#nx', m); if (nx) nx.onclick = () => { cur++; exam(); scrollTo(0, 0); };
     $$('.tka-n', m).forEach(b => b.onclick = () => { cur = +b.dataset.n; exam(); scrollTo(0, 0); });
@@ -409,4 +435,36 @@ Stu.hasil = function (m, ctx, A, R) {
     <div class="col mt2">${R.selanjutnya ? `<a class="btn btn-primary btn-lg shine pulse-glow" href="${ctx.base}/akt/${R.selanjutnya.id}">Lanjut: ${esc(R.selanjutnya.judul)} →</a>` : ''}<a class="btn btn-green" href="${ctx.base}/akt/${meta.id}" id="ulang">↻ Coba Latihan Ulang (Bebas Beban)</a><a class="btn btn-ghost" href="${ctx.base}/nilai">Lihat Nilai & Riwayat</a></div>`;
   $('#ulang', m).onclick = e => { e.preventDefault(); Views.sAkt($('#app'), ctx); };
   scrollTo(0, 0); Stu.animRings(m); afterRender(m); if (lulus) Confetti.go(R.resmi ? 160 : 70);
+};
+
+// =====================================================================
+//  PAPAN PERINGKAT (teaser sebelum ada nilai; otomatis berubah ketika nilai masuk)
+// =====================================================================
+const Rank = {
+  LABEL: ['Asesmen Formatif Sub-bab 1', 'Asesmen Formatif Sub-bab 2', 'Asesmen Formatif Sub-bab 3', 'Asesmen Sumatif (Simulasi TKA)'],
+  teaser(masuk) {
+    return `<div class="rank-grid"><div><div class="podium"><div class="pod p2 lock"><div class="md">🥈</div><b>Juara 2</b><div class="small muted">menunggu…</div></div><div class="pod p1 lock"><div class="md">🥇</div><b>Juara 1</b><div class="small muted">siapa dia?</div></div><div class="pod p3 lock"><div class="md">🥉</div><b>Juara 3</b><div class="small muted">menunggu…</div></div></div>
+      <p class="center small muted mt">Belum ada yang mengerjakan asesmen. Kerjakan asesmenmu dan <b>namamu bisa jadi yang pertama</b> di sini! ✨</p></div>
+      <div class="col"><div class="jr kosong"><span class="tr">🏆</span><div><b>Juara Kelas 7A</b><div class="small muted">Belum ada — jadilah yang pertama!</div></div></div><div class="jr kosong"><span class="tr">🏆</span><div><b>Juara Kelas 7B</b><div class="small muted">Belum ada — jadilah yang pertama!</div></div></div>
+      <div class="best">${Rank.LABEL.map(l => `<div class="b kosong"><div class="tiny" style="font-weight:800;letter-spacing:.05em">NILAI TERTINGGI</div><b class="small">${l}</b><div class="small">Belum ada yang mengerjakan</div></div>`).join('')}</div></div></div>
+      <p class="center small muted mt2">🔒 Demi privasi, nama dan nilai siswa hanya tampil setelah masuk. Tampilan ini otomatis berubah saat nilai pertama masuk.</p>
+      ${masuk ? '' : '<div class="center mt"><a class="btn btn-primary shine" href="#/masuk">Masuk untuk melihat peringkat ▶</a></div>'}`;
+  },
+  html(d) {
+    if (!d || d.kosong) return Rank.teaser(true);
+    const med = ['🥇', '🥈', '🥉'], top = d.top, pod = i => { const e = top[i]; return e ? `<div class="pod p${i + 1}"><div class="md">${med[i]}</div><b>${esc(e.nama)}</b><div class="tiny muted">Kelas ${esc(e.kelas)}</div><div class="sc">${e.rata}</div></div>` : `<div class="pod p${i + 1} lock"><div class="md">${med[i]}</div><b>Juara ${i + 1}</b><div class="small muted">menunggu…</div></div>`; };
+    return `<p class="small muted" style="margin-bottom:12px">Peringkat dihitung dari <b>rata-rata nilai resmi</b> asesmen yang sudah dikerjakan (sampai <b>${esc(d.sampai)}</b>). ${d.jumlahBernilai} dari ${d.jumlahSiswa} siswa sudah punya nilai.</p>
+      <div class="rank-grid"><div><div class="podium">${pod(1)}${pod(0)}${pod(2)}</div>${top.slice(3).map(e => `<div class="rk"><span class="n">${e.urut}</span><div class="grow"><b>${esc(e.nama)}</b> <span class="small muted">· Kelas ${esc(e.kelas)} · ${e.n} asesmen</span><div class="bar"><i data-w="${e.rata}%"></i></div></div><span class="sc">${e.rata}</span></div>`).join('')}</div>
+      <div class="col">${d.juaraKelas.map(j => j.kosong ? `<div class="jr kosong"><span class="tr">🏆</span><div><b>Juara Kelas ${esc(j.kelas)}</b><div class="small muted">Belum ada — jadilah yang pertama!</div></div></div>` : `<div class="jr"><span class="tr">🏆</span><div class="grow"><b>Juara Kelas ${esc(j.kelas)}</b><div>${esc(j.nama)}</div><div class="tiny muted">${j.n} asesmen dikerjakan</div></div><span class="sc" style="font:800 26px var(--ff-h);color:var(--primary-d)">${j.rata}</span></div>`).join('')}
+      <div class="best">${d.perAsesmen.map(p => p.kosong ? `<div class="b kosong"><div class="tiny" style="font-weight:800;letter-spacing:.05em">NILAI TERTINGGI</div><b class="small">${esc(p.label)}</b><div class="small">Belum ada yang mengerjakan</div></div>` : `<div class="b"><div class="tiny muted" style="font-weight:800;letter-spacing:.05em">NILAI TERTINGGI</div><b class="small">${esc(p.label)}</b><div class="row between"><span>${esc(p.nama)} <span class="tiny muted">(${esc(p.kelas)})</span></span><b style="font:800 20px var(--ff-h);color:var(--green-d)">${p.skor}</b></div></div>`).join('')}</div></div></div>
+      <p class="center tiny muted mt">Nama disingkat demi privasi · Kelas uji coba tidak ikut peringkat.</p>`;
+  },
+  async load(box) {
+    if (!box) return;
+    if (!Sesi.get() && !API.demo) { box.innerHTML = Rank.teaser(false); return; }
+    box.innerHTML = Rank.teaser(true);
+    const r = await api('app.peringkat'); if (!box.isConnected) return;
+    box.innerHTML = r.success ? Rank.html(r.data) : Rank.teaser(!!Sesi.get()); afterRender(box);
+    return r.success ? r.data : null;
+  }
 };

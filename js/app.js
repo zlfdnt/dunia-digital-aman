@@ -23,7 +23,7 @@ function route() {
       const demo = p0 === 'pg';
       if (!demo && !(s && s.me.role === 'guru')) { location.hash = '#/masuk?t=guru'; return; }
       API.demo = demo; const ctx = { base: '#/' + p0, params: parts.slice(2), q }, pg = parts[1] || 'overview';
-      ({ overview: Views.gOverview, log: Views.gLog, nilai: Views.gNilai, kunci: Views.gKunci, impor: Views.gImpor }[pg] || Views.gOverview)(el, ctx); return;
+      ({ overview: Views.gOverview, log: Views.gLog, nilai: Views.gNilai, kunci: Views.gKunci, soal: Views.gSoal, impor: Views.gImpor }[pg] || Views.gOverview)(el, ctx); return;
     }
     location.hash = '#/';
   } catch (e) {

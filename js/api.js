@@ -9,7 +9,7 @@ const API = {
   ready() { return !/GANTI|XXXX/.test(APP_CONFIG.GAS_URL); },
   perf: []
 };
-const READ = /^(app\.boot|siswa\.beranda|aktivitas\.baca|guru\.(overview|log|nilai|kunci))$/;
+const READ = /^(app\.boot|app\.peringkat|siswa\.beranda|aktivitas\.baca|guru\.(overview|log|nilai|kunci|soalAmbil))$/;
 const _inflight = {}; let _epoch = 0;
 
 async function api(action, data, opt) {
@@ -24,15 +24,17 @@ async function api(action, data, opt) {
   const p = (async () => {
     const t0 = performance.now();
     try {
+      const ac = new AbortController(), tm = setTimeout(() => ac.abort(), opt.timeout || 30000);   // jangan 'loading' selamanya
       const res = await fetch(APP_CONFIG.GAS_URL, {
         method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },   // wajib text/plain: hindari preflight CORS
-        body: JSON.stringify({ action, token: s ? s.token : '', data: data || {} })
+        body: JSON.stringify({ action, token: s ? s.token : '', data: data || {} }), signal: ac.signal
       });
+      clearTimeout(tm);
       const j = await res.json();
       API.perf.push({ action, total: Math.round(performance.now() - t0), server: j.ms, cached: !!j.cached });
       if (j.code === 'AUTH' && action.indexOf('auth.') !== 0) { Sesi.clear(); toast('Sesi berakhir, silakan masuk lagi.', 'err'); location.hash = '#/masuk'; }
       return j;
-    } catch (e) { return { success: false, message: 'Gagal terhubung ke server. Periksa internet lalu coba lagi.' }; }
+    } catch (e) { return { success: false, message: e && e.name === 'AbortError' ? 'Server tidak merespons (lebih dari 30 detik). Coba lagi sebentar.' : 'Gagal terhubung ke server. Periksa internet lalu coba lagi.' }; }
   })();
   if (isRead) { _inflight[k] = p; p.finally(() => delete _inflight[k]); }
   return p;
