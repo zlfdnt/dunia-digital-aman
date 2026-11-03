@@ -288,3 +288,25 @@ body.tka-mode .s-main{margin:0 auto!important;max-width:1180px;padding:0 0 40px}
 .bs-pern .h{font-weight:800;font-size:12px;color:var(--text2);text-align:center}
 .bs-img{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.bs-img img{width:120px;height:80px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
 .sticky-save{position:sticky;bottom:10px;z-index:20;display:flex;gap:10px;align-items:center;justify-content:space-between;background:#2e2e48;color:#fff;border-radius:9999px;padding:10px 12px 10px 22px;box-shadow:0 10px 30px rgba(46,46,72,.4);margin-top:16px}
+
+/* ===== video tersemat (tetap di situs) ===== */
+.mat .vid{margin:14px 0;text-align:center}.vid .vwrap{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#111;box-shadow:var(--sh)}
+.vid .vwrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.vid.short .vwrap{aspect-ratio:9/16;max-width:330px;margin:0 auto}
+.mat .vid figcaption{margin-top:8px;font-size:13px;font-weight:700;color:var(--text2)}
+/* ===== simulasi fungsi mesin pencari ===== */
+.fsim>li{margin-bottom:14px}.msim{margin-top:10px;background:#fff;border:2px solid var(--lav);border-radius:16px;padding:12px}
+.msim .search-box{margin-bottom:10px}.msim .qv{flex:1;font-weight:600}.sr{padding:10px 12px;border-radius:12px;background:var(--lav2);margin-bottom:8px}.sr .u{font-size:12px;color:var(--green-d);font-weight:700;word-break:break-all}.sr .jd{color:#1a0dab;display:block}.sr p{margin:2px 0 0}
+.sr.def{background:#fffdf0;border:1px solid #e8dc7a}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}.tile{border-radius:12px;aspect-ratio:1;display:grid;place-items:center;text-align:center;padding:6px;color:#fff;font-weight:800}.tile span{font-size:34px}.tile small{font-size:10.5px;line-height:1.2}
+.tile.t0{background:linear-gradient(135deg,#7C4DFF,#5B8DEF)}.tile.t1{background:linear-gradient(135deg,#FBBF24,#EC4899)}.tile.t2{background:linear-gradient(135deg,#5FA052,#5B8DEF)}.tile.t3{background:linear-gradient(135deg,#EC4899,#7C4DFF)}
+.vrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.vtile{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--lav2)}.vtile .pl{width:40px;height:40px;border-radius:12px;background:#EF4444;color:#fff;display:grid;place-items:center;flex:none}
+.minimap{width:100%;max-height:190px;border-radius:14px;display:block}
+/* ===== kasus nyata ===== */
+.kcase{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start;background:#fff;border:1px solid var(--border);border-radius:18px;padding:14px;margin-bottom:14px;box-shadow:var(--sh)}
+.kcase img{width:100%;border-radius:14px;display:block}.kcase h4{margin:6px 0;font-size:17px}.kcase p{margin:0 0 8px;font-size:15px;line-height:1.65}.kcase .cek{background:var(--lav2);border-radius:12px;padding:8px 10px}
+@media(max-width:640px){.kcase{grid-template-columns:1fr}}
+/* ===== tantangan: perisai & peta keputusan ===== */
+.shield{display:flex;align-items:center;gap:12px;font-weight:800}.shield .bar{flex:1;height:14px}.shield.low b{color:var(--danger)}.shield.on-dark{color:#fff}.shield.on-dark .bar{background:rgba(255,255,255,.3)}
+.peta .pn{background:#fff;border:2px solid var(--lav);border-radius:14px;padding:10px 12px}.peta .pq{font-weight:800;margin-bottom:6px}.peta .pbr{display:flex;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700}
+.peta .b-ya{background:#e9f9e4;color:var(--green-d);padding:4px 10px;border-radius:9999px}.peta .b-tidak{background:var(--danger-s);color:var(--danger);padding:4px 10px;border-radius:9999px}
+.peta .pdn{text-align:center;color:var(--primary);font-size:18px;line-height:1.1}

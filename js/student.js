@@ -150,7 +150,7 @@ Views.sAkt = async function (el, ctx) {
   };
   const head = (step, total, label) => `<div class="card" style="padding:14px"><div class="row between wrap"><span class="badge">${sub.ikon} ${esc(sub.judul)}</span><span class="small muted">⏳ ${label || 'Langkah'} ${step} dari ${total}</span></div><div class="bar mt"><i style="width:${Math.round(step / total * 100)}%"></i></div></div>`;
   if (meta.jenis === 'Materi') Stu.materi(m, A, head, selesai);
-  else if (meta.jenis === 'Lab') Stu.lab(m, A, head, selesai);
+  else if (meta.jenis === 'Lab') (A.data.mode === 'tantangan' ? Stu.tantangan : Stu.lab)(m, A, head, selesai);
   else if (meta.jenis === 'Kegiatan') Stu.kegiatan(m, A, head, selesai);
   else if (meta.jenis === 'Sumatif') Stu.tka(m, ctx, A, dur, r2 => Stu.hasil(m, ctx, A, r2));
   else Stu.asesmen(m, ctx, A, dur, r2 => Stu.hasil(m, ctx, A, r2));
@@ -219,10 +219,35 @@ Stu.blok = function (b) {
     case 'aktif': return `<div class="box aktif"><span class="bt">📗 Aktivitas Sederhana</span><div><b>${rich(b.j)}</b><p>${rich(b.x)}</p>${b.l.length ? `<ol>${b.l.map(i => `<li>${rich(i)}</li>`).join('')}</ol>` : ''}</div></div>`;
     case 'perc': return `<div class="box perc"><span class="bt">🧪 Percobaan</span><div><b>${rich(b.j)}</b><p>${rich(b.x)}</p><b>Pertanyaan Refleksi:</b><ol>${b.q.map(i => `<li>${rich(i)}</li>`).join('')}</ol></div></div>`;
     case 'tab': return `<div class="tbwrap"><table><caption>${rich(b.c)}</caption><thead><tr>${b.k.map(h => `<th>${rich(h)}</th>`).join('')}</tr></thead><tbody>${b.b.map(r => `<tr>${r.map(c => `<td>${rich(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    case 'video': return `<figure class="vid ${b.short ? 'short' : ''}"><div class="vwrap"><iframe src="https://www.youtube-nocookie.com/embed/${esc(b.id)}?rel=0&modestbranding=1&playsinline=1&iv_load_policy=3" title="${esc(b.c)}" loading="lazy" sandbox="allow-scripts allow-same-origin allow-presentation" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><figcaption>🎬 ${rich(b.c)}</figcaption></figure>`;
+    case 'fungsi': return `<ol class="abc fsim">${b.items.map((it, i) => `<li><div class="row between wrap" style="gap:8px"><b>${esc(it.judul)}.</b><button class="btn btn-soft btn-sm" data-fsim="${esc(JSON.stringify(it))}">▶ Coba simulasi</button></div><div class="msim hide"></div></li>`).join('')}</ol>`;
+    case 'kasus': return `<div class="kasus"><h4 class="sub">🇮🇩 ${rich(b.j)}</h4>${b.items.map(k => `<div class="kcase"><img src="${esc(k.gambar)}" alt="Ilustrasi: ${esc(k.judul)}" loading="lazy"><div><span class="badge ${k.jenis === 'Hoaks' ? 'b-red' : k.jenis === 'Misinformasi' ? 'b-warm' : ''}">${esc(k.jenis)}</span><h4>${rich(k.judul)}</h4><p>${rich(k.cerita)}</p><p><b>Mengapa termasuk ${esc(k.jenis.toLowerCase())}?</b> ${rich(k.mengapa)}</p><p class="cek">🔎 <b>Cara memeriksa:</b> ${rich(k.cek)}</p></div></div>`).join('')}</div>`;
     case 'img': return `<figure><img src="${esc(b.s)}" alt="${esc(b.c)}" loading="lazy"><figcaption>${rich(b.c)}</figcaption></figure>`;
   }
   return '';
 };
+
+// ---- simulasi "fungsi mesin pencari": ketik kueri → tekan Cari → contoh hasil ----
+Stu.simHasil = h => {
+  const lab = '<div class="tiny muted" style="margin-bottom:6px">Contoh tampilan hasil (simulasi)</div>';
+  if (h.tipe === 'definisi') return lab + `<div class="sr def"><b style="font-size:20px">${esc(h.kata)}</b> <i class="muted">${esc(h.jenis)}</i><p>${esc(h.arti)}</p><p class="muted small">Contoh: ${esc(h.contoh)}</p></div>`;
+  if (h.tipe === 'situs') return lab + h.daftar.map((d, i) => `<div class="sr"><div class="u">${esc(d.url)}</div><b class="jd">${esc(d.judul)}</b><p class="small">${esc(d.ket)}</p></div>`).join('');
+  if (h.tipe === 'media') return lab + `<div class="tiles">${h.gambar.map((g, i) => `<div class="tile t${i % 4}"><span>${g[0]}</span><small>${esc(g[1])}</small></div>`).join('')}</div><div class="vrow">${h.video.map(v => `<div class="vtile"><span class="pl">▶</span><div><b class="small">${esc(v[0])}</b><div class="tiny muted">Video · ${esc(v[1])}</div></div></div>`).join('')}</div>`;
+  if (h.tipe === 'berita') return lab + h.daftar.map(d => `<div class="sr"><div class="tiny muted">${esc(d.sumber)} · ${esc(d.waktu)}</div><b class="jd">${esc(d.judul)}</b></div>`).join('');
+  if (h.tipe === 'peta') return lab + `<svg viewBox="0 0 400 170" class="minimap"><rect width="400" height="170" rx="14" fill="#e8f3e4"/><path d="M0 110 L400 70" stroke="#fff" stroke-width="14"/><path d="M150 0 L210 170" stroke="#fff" stroke-width="12"/><path d="M0 40 L400 140" stroke="#f6f0d8" stroke-width="8"/>${[[120, 80], [250, 58], [320, 118]].map((p, i) => `<g transform="translate(${p[0]},${p[1]})"><path d="M0 0 C-14 -20 -14 -38 0 -38 C14 -38 14 -20 0 0z" fill="#EF4444"/><circle cx="0" cy="-27" r="5" fill="#fff"/><text x="0" y="14" font-size="11" font-weight="800" text-anchor="middle" fill="#22223B">${i + 1}</text></g>`).join('')}<circle cx="190" cy="105" r="9" fill="#5B8DEF" stroke="#fff" stroke-width="3"/></svg><ol class="small" style="margin:8px 0 0 18px">${h.daftar.map(d => `<li>${esc(d[0])} <b>· ${esc(d[1])}</b></li>`).join('')}</ol>`;
+  if (h.tipe === 'harga') return lab + `<div class="tb-wrap"><table class="tb small"><thead><tr><th>Toko</th><th>Harga</th><th>Rating</th></tr></thead><tbody>${h.daftar.map((d, i) => `<tr><td>${esc(d[0])}</td><td><b ${i === 2 ? 'style="color:var(--green-d)"' : ''}>${esc(d[1])}</b>${i === 2 ? ' <span class="badge b-ok">termurah</span>' : ''}</td><td>${esc(d[2])}</td></tr>`).join('')}</tbody></table></div>`;
+  if (h.tipe === 'tutorial') return lab + `<div class="sr"><div class="vtile" style="margin-bottom:8px"><span class="pl">▶</span><b class="small">Video tutorial: ${esc(h.judul)}</b></div><b>${esc(h.judul)}</b><ol class="small" style="margin:6px 0 0 18px">${h.langkah.map(l => `<li>${esc(l)}</li>`).join('')}</ol></div>`;
+  return '';
+};
+Stu.bindMat = root => $$('[data-fsim]', root).forEach(btn => btn.onclick = () => {
+  const it = JSON.parse(btn.dataset.fsim), panel = btn.closest('li').querySelector('.msim');
+  if (!panel.classList.contains('hide')) { panel.classList.add('hide'); btn.textContent = '▶ Coba simulasi'; return; }
+  btn.textContent = '✕ Tutup simulasi'; panel.classList.remove('hide');
+  panel.innerHTML = `<div class="search-box"><span class="qv">🔎 </span><button class="btn btn-green btn-sm" disabled>Cari</button></div><div class="res"></div>`;
+  const qv = $('.qv', panel), go = $('.btn', panel), res = $('.res', panel); let i = 0;
+  const iv = setInterval(() => { qv.textContent = '🔎 ' + it.kueri.slice(0, ++i) + (i < it.kueri.length ? '▏' : ''); if (i >= it.kueri.length) { clearInterval(iv); go.disabled = false; go.classList.add('pulse-glow'); } }, 55); _timers.push(iv);
+  go.onclick = () => { go.classList.remove('pulse-glow'); res.innerHTML = '<div class="fadeup">' + Stu.simHasil(it.hasil) + '</div>'; };
+});
 Stu.materi = function (m, A, head, selesai) {
   const P = A.data.halaman; let i = 0;
   const draw = () => {
@@ -232,7 +257,7 @@ Stu.materi = function (m, A, head, selesai) {
     $('#pv', m).onclick = () => { i--; draw(); scrollTo(0, 0); };
     const n = $('#nx', m); if (n) n.onclick = () => { i++; draw(); scrollTo(0, 0); };
     const f = $('#fin', m); if (f) f.onclick = () => selesai(f);
-    afterRender(m);
+    Stu.bindMat(m); afterRender(m);
   };
   draw();
 };
@@ -273,6 +298,50 @@ Stu.lab = function (m, A, head, selesai) {
     draw();
   };
   run();
+};
+
+
+// =====================================================================
+//  LAB: TANTANGAN KODE MINI (skenario + aturan logika + Perisai Digital)
+// =====================================================================
+Stu.tantangan = function (m, A, head, selesai) {
+  const D = A.data, SK = D.skenario, N = SK.length, TOT = N + 2;
+  let step = 0, shield = 100, pertama = SK.map(() => null), salahIni = {};
+  const meter = () => `<div class="shield ${shield < 40 ? 'low' : ''}"><span>🛡️ Perisai Digital</span><div class="bar ${shield < 40 ? 'red' : 'green'}"><i style="width:${shield}%"></i></div><b>${shield}%</b></div>`;
+  const tampil = T => T.tipe === 'pesan' ? `<div class="card mt chat"><div class="row between"><div class="row"><span class="icon-circle" style="background:#d8f5cf">💬</span><b>${esc(T.dari)}</b></div></div><div class="bub">${rich(T.isi)}</div></div>` : `<div class="info-card mt"><div class="in"><h3 style="font-size:18px">${rich(T.judul)}</h3><p class="mt">${rich(T.isi)}</p></div></div>`;
+  const peta = () => `<details class="card mt"><summary style="cursor:pointer;font-weight:800">🗺️ Peta Keputusan (tambahan tantangan) — ketuk untuk membuka</summary><div class="peta mt">${D.peta.map((n, i) => `<div class="pn"><div class="pq">${i + 1}. ${esc(n.q)}</div><div class="pbr"><span class="b-ya">Ya → ${esc(n.ya)}</span><span class="b-tidak">Tidak → ${esc(n.tidak)}</span></div></div>`).join('<div class="pdn">▼</div>')}</div></details>`;
+  const intro = () => {
+    step = 0; m.innerHTML = head(1, TOT, 'Tahap') + `<div class="card warm mt"><span class="badge b-warm">🧩 Tantangan Kode Mini</span><h3 class="mt">${esc(D.judul)}</h3><p class="mt">${rich(D.narasi)}</p></div>
+      <div class="card mt"><h3 style="font-size:19px">🧠 Aturan Logika</h3><p class="small muted">Gunakan pengetahuanmu tentang literasi dan etika digital. Ingat aturan berikut sebagai “kode” keputusanmu:</p><ol class="mat" style="margin:10px 0 0 22px;line-height:1.8">${D.aturan.map(a => `<li>${rich(a)}</li>`).join('')}</ol></div>
+      ${peta()}<div class="card mt">${meter()}<p class="small muted mt">Setiap pilihan yang kurang tepat mengurangi Perisai Digital. Kamu boleh mencoba lagi sampai benar.</p></div>
+      <button class="btn btn-primary btn-block btn-lg shine pulse-glow mt2" id="go">▶ Mulai Tantangan (${N} skenario)</button>`;
+    $('#go', m).onclick = () => { shield = 100; pertama = SK.map(() => null); scen(0); };
+    afterRender(m);
+  };
+  const scen = i => {
+    step = i + 1; const S = SK[i]; let ok = false; salahIni = {};
+    const draw = () => {
+      m.innerHTML = head(i + 2, TOT, 'Tahap') + `<div class="card mt" style="padding:14px">${meter()}</div>
+      <div class="card warm mt"><div class="row"><span class="icon-circle" style="font-size:26px">${S.ikon}</span><div><span class="badge b-warm">Skenario ${i + 1} dari ${N}</span><h3 style="font-size:20px">${esc(S.judul)}</h3></div></div><p class="mt">${esc(S.situasi)}</p></div>${tampil(S.tampil)}
+      <div class="card mt"><h3 style="font-size:18px">${esc(S.tanya)}</h3><div class="mt">${S.opsi.map((o, k) => `<button class="opt ${ok && o.benar ? 'ok' : ''} ${salahIni[k] ? 'bad' : ''}" data-k="${k}" ${ok || salahIni[k] ? 'disabled' : ''}><span class="dot">${ok && o.benar ? '✓' : salahIni[k] ? '✕' : 'ABCD'[k]}</span><span>${esc(o.t)}</span></button>`).join('')}</div><div id="fb"></div></div>`;
+      $$('.opt', m).forEach(b => b.onclick = () => {
+        const k = +b.dataset.k, o = S.opsi[k];
+        if (o.benar) { ok = true; if (pertama[i] === null) pertama[i] = true; draw(); Confetti.go(50); const r = D.aturan[S.aturan]; $('#fb', m).innerHTML = `<div class="card mt pop" style="background:var(--green-l);border-color:var(--green)">${esc(o.umpan)}<div class="mt small">🧠 <b>Aturan yang dipakai:</b> ${rich(r)}</div></div><button class="btn btn-primary btn-block mt shine" id="nx">${i < N - 1 ? 'Skenario Berikutnya →' : 'Lihat Refleksi & Evaluasi →'}</button>`; $('#nx', m).onclick = () => { i < N - 1 ? scen(i + 1) : akhir(); scrollTo(0, 0); }; }
+        else { salahIni[k] = 1; if (pertama[i] === null) pertama[i] = false; shield = Math.max(0, shield - 15); draw(); $('#fb', m).innerHTML = `<div class="card mt shake" style="background:var(--danger-s);border-color:#fca5a5">${esc(o.umpan)} <b>(−15% Perisai)</b> Coba pilihan lain!</div>`; }
+      });
+    };
+    draw();
+  };
+  const akhir = () => {
+    step = N + 1; const benar = pertama.filter(x => x === true).length, bd = D.badge.find(b => shield >= b[0]);
+    m.innerHTML = head(TOT, TOT, 'Tahap') + `<div class="hero-card center pop"><div style="font-size:60px">${bd[1].split(' ')[0]}</div><h2>${esc(bd[1].replace(/^\S+\s/, ''))}</h2><p style="opacity:.92">${esc(bd[2])}</p><div class="mt">${meter().replace('class="shield', 'class="shield on-dark')}</div></div>
+      <div class="card mt"><h3 style="font-size:19px">💭 Refleksi dan Evaluasi</h3><p class="muted small">Setiap keputusan membawa dampak. Evaluasi apakah kamu sudah melindungi diri secara digital.</p>
+      <div class="mt">${SK.map((s, i) => `<div class="row between" style="padding:8px 0;border-bottom:1px solid var(--border)"><span>${s.ikon} ${esc(s.judul)}</span><span class="badge ${pertama[i] ? 'b-ok' : 'b-amber'}">${pertama[i] ? '✓ Tepat di percobaan pertama' : '↻ Perlu belajar lagi'}</span></div>`).join('')}</div>
+      <p class="mt"><b>${benar} dari ${N}</b> skenario langsung kamu jawab dengan tepat.</p></div>
+      <div class="col mt2"><button class="btn btn-primary btn-lg shine pulse-glow" id="fin">Tandai Selesai & Lanjutkan →</button><button class="btn btn-ghost" id="ulang">↻ Ulangi skenario untuk hasil yang lebih baik</button></div>`;
+    $('#fin', m).onclick = e => selesai(e.currentTarget); $('#ulang', m).onclick = () => { shield = 100; pertama = SK.map(() => null); intro(); scrollTo(0, 0); }; Confetti.go(70);
+  };
+  intro();
 };
 
 // =====================================================================

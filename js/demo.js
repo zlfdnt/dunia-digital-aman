@@ -28,7 +28,7 @@ const Demo = {
     const mk = a => ({ id: a.id, jenis: a.jenis, judul: a.judul, menit: a.menit, status: st[a.id] || 'terkunci', berikutnya: a.id === 'S2-L', oleh: '' });
     const subbab = PV.subbab.map(s => { const l = PV.akt.filter(a => a.sub === s.id).map(mk), sel = l.filter(a => a.status === 'selesai').length; return { ...s, status: sel === l.length ? 'selesai' : l.every(a => a.status === 'terkunci') ? 'terkunci' : 'berjalan', selesai: sel, total: l.length, aktivitas: l }; });
     const sum = PV.akt.filter(a => a.sub === 'SUM').map(mk)[0];
-    return { siswa: { id: 'tamu', nama: 'Siswa Tamu', kelas: '7A', nis: 'CONTOH' }, bab: PV.bab, subbab, sumatif: sum, progres: { selesai: 5, total: 13, persen: 38 }, tuntasBab: false, berikut: 'S2-L',
+    return { siswa: { id: 'tamu', nama: 'Siswa Tamu', kelas: '7A', nis: 'CONTOH' }, bab: PV.bab, subbab, sumatif: sum, progres: { selesai: 5, total: 14, persen: 36 }, tuntasBab: false, berikut: 'S2-L',
       nilai: { formatif: { S1: 80 }, rata: 80, sumatif: null, tuntas: null }, xp: 205, level: 1, bukaGuru: null, catatan: [],
       riwayat: PV.akt.filter(a => /Formatif|Sumatif/.test(a.jenis)).map(a => ({ asesmen: a.id, judul: a.judul, jenis: a.jenis, resmi: a.id === 'S1-F' ? { no: 0, skor: 80, benar: 4, total: 5, durasi: 140, waktu: '2026-10-14 10:45:00' } : null, latihan: a.id === 'S1-F' ? [{ no: 1, skor: 100, benar: 5, total: 5, durasi: 90, waktu: '2026-10-14 11:30:00' }] : [] })) };
   },

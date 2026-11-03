@@ -3,7 +3,7 @@ const Views = window.Views = window.Views || {};
 const IMG = n => 'assets/img/' + n + '.svg';
 const MODUL = [
   { id: 'S1', tag: 'Sub-bab 1', judul: 'Cara Kerja Internet & Mesin Pencari', ket: 'Ikuti perjalanan paket data dan bongkar rahasia robot penjelajah mesin pencari.', img: ['modul-1-a', 'modul-1-b', 'modul-1-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🧩 Kegiatan', '📝 Asesmen'], menit: 62 },
-  { id: 'S2', tag: 'Sub-bab 2', judul: 'Literasi Digital & Evaluasi Informasi', ket: 'Jadi detektif cek fakta: kenali hoaks, periksa domain, dan terapkan prinsip S.A.R.I.', img: ['modul-2-a', 'modul-2-b', 'modul-2-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🧩 Eksperimen Hoaks', '📝 Asesmen'], menit: 71 },
+  { id: 'S2', tag: 'Sub-bab 2', judul: 'Literasi Digital & Evaluasi Informasi', ket: 'Jadi detektif cek fakta: kenali hoaks, periksa domain, dan terapkan prinsip S.A.R.I.', img: ['modul-2-a', 'modul-2-b', 'modul-2-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🧩 Eksperimen Hoaks', '🛡️ Tantangan Kode Mini', '📝 Asesmen'], menit: 83 },
   { id: 'S3', tag: 'Sub-bab 3', judul: 'Ancaman Digital & Perlindungan Data Pribadi', ket: 'Tangkis phishing, jaga kode OTP, buat sandi kuat, dan aktifkan verifikasi dua langkah.', img: ['modul-3-a', 'modul-3-b', 'modul-3-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🔑 Bengkel Sandi', '📝 Asesmen'], menit: 61 },
   { id: 'SUM', tag: 'Uji Kompetensi', judul: 'Asesmen Sumatif Bab 2 (Simulasi TKA)', ket: 'Tampilan ujian berbasis komputer: 3 bentuk soal, daftar soal, ragu-ragu, dan timer. Terbuka setelah semua sub-bab selesai. KKM 72.', img: ['modul-4-a', 'modul-4-b', 'modul-4-c'], chip: ['🏆 20 Soal Format TKA', '⭐ Nilai Resmi'], menit: 40 }
 ];
@@ -32,7 +32,7 @@ Views.landing = function (el) {
     </div>
   </section>
   <section class="container"><div class="grid g4" style="margin-top:-36px;position:relative;z-index:5">
-    ${[[3, 'Sub-bab', ''], [13, 'Aktivitas Berurutan', ''], [3, 'Kelas (7A–7C)', ''], [72, 'KKM Sumatif', '']].map(s => `<div class="card stat glow rv"><b data-count="${s[0]}">0</b><span class="muted">${s[1]}</span></div>`).join('')}
+    ${[[3, 'Sub-bab', ''], [14, 'Aktivitas Berurutan', ''], [3, 'Kelas (7A–7C)', ''], [72, 'KKM Sumatif', '']].map(s => `<div class="card stat glow rv"><b data-count="${s[0]}">0</b><span class="muted">${s[1]}</span></div>`).join('')}
   </div></section>
   <section class="sec" id="identitas" style="padding-bottom:20px"><div class="container"><div class="rv">${Stu.identitas(PV.bab, true)}</div></div></section>
   <section class="sec" id="modul"><div class="container">
