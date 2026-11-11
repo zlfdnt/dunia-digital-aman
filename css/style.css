@@ -310,3 +310,34 @@ body.tka-mode .s-main{margin:0 auto!important;max-width:1180px;padding:0 0 40px}
 .peta .pn{background:#fff;border:2px solid var(--lav);border-radius:14px;padding:10px 12px}.peta .pq{font-weight:800;margin-bottom:6px}.peta .pbr{display:flex;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700}
 .peta .b-ya{background:#e9f9e4;color:var(--green-d);padding:4px 10px;border-radius:9999px}.peta .b-tidak{background:var(--danger-s);color:var(--danger);padding:4px 10px;border-radius:9999px}
 .peta .pdn{text-align:center;color:var(--primary);font-size:18px;line-height:1.1}
+
+.sfx-btn{width:40px;height:40px;border-radius:50%;background:var(--lav);font-size:19px;display:grid;place-items:center;flex:none;transition:transform .2s}.sfx-btn:hover{transform:scale(1.1)}
+
+/* ===== TKA: soal berbasis teks ===== */
+.tka-qb.split{display:grid;grid-template-columns:1.05fr 1fr;gap:20px;align-items:start}
+.tka-text{border:2px solid #e5e7f0;border-radius:10px;background:#fcfcff}.tka-text>summary{padding:10px 14px;font-weight:800;cursor:pointer;background:#eef0fb;border-radius:8px;list-style:none;font-size:14px}
+.tka-text[open]>summary{border-radius:8px 8px 0 0}.tka-teks{padding:12px 16px;max-height:66vh;overflow:auto;font-size:calc(var(--fs,17px) - 1px);line-height:1.75}
+.tka-teks p{margin:0 0 10px;text-align:left}.tt-h{margin-bottom:10px}.tt-lab{font-weight:800;color:var(--primary-d);margin:8px 0 6px}.tt-hr{border:0;border-top:2px dashed var(--border);margin:14px 0}
+.tka-qside{min-width:0}
+@media(max-width:900px){.tka-qb.split{grid-template-columns:1fr}.tka-teks{max-height:none}}
+
+/* ===== penyesuaian HP ===== */
+.g-shell>div{min-width:0}.tb-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.g-main .card{min-width:0}
+@media(max-width:960px){
+  .g-main .grid[style*="grid-template-columns"]{grid-template-columns:1fr!important}
+  .g-top{padding:10px 14px;gap:8px}.g-main h1{font-size:27px}.g-main h2{font-size:23px}
+  .g-side{padding:10px 12px;gap:8px}.g-side nav{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:4px}.g-side nav a{white-space:nowrap;padding:9px 14px;font-size:14px}
+  .kelas-tabs button{padding:6px 14px}.g-top .row{flex-wrap:wrap}
+  .tb{min-width:620px}
+}
+@media(max-width:560px){
+  .nav .container{padding:0 12px}.nav .logo .lt{display:none}.nav .row{gap:6px}.nav .btn-sm{padding:7px 11px;font-size:12.5px}
+  .container{padding:0 14px}h1{font-size:28px}.hero-slide h1{font-size:30px}.hero-slide .btn-lg{padding:12px 20px;font-size:15px}
+  .card{padding:16px}.modal-box{padding:20px;border-radius:22px}.s-top .in{gap:8px}
+  .tka-bar .in{padding:8px 12px;gap:8px}.tka-bar .ttl{font-size:14px}.tka-bar .ttl small{display:none}.tka-timer{font-size:18px;padding:5px 10px}.tka-qb{padding:14px}.tka-center{margin:16px auto}.tka-card{padding:16px}
+  .kcase{padding:12px}.minimap{max-height:150px}.tiles{grid-template-columns:repeat(2,1fr)}.vrow{grid-template-columns:1fr}
+  .bs-pern{grid-template-columns:1fr 62px 62px 32px}.sticky-save{border-radius:18px;padding:10px 12px;flex-wrap:wrap}
+  .rank-grid .podium{gap:6px}.pod .md{font-size:26px}.pod .sc{font-size:18px}.pod b{font-size:13px}
+  .search-box{flex-wrap:wrap;border-radius:18px}.meta{grid-template-columns:100px 1fr}
+}
+@media(max-width:560px){.badge{white-space:normal;line-height:1.35}.chips{gap:6px}.chip{padding:7px 14px}}

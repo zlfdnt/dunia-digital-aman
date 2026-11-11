@@ -18,9 +18,9 @@ Views.landing = function (el) {
   ];
   el.innerHTML = `
   <header class="nav"><div class="container">
-    <a class="logo" href="#/"><img src="assets/img/logo.svg" alt="">Dunia Digital Aman</a>
+    <a class="logo" href="#/"><img src="assets/img/logo.svg" alt=""><span class="lt">Dunia Digital Aman</span></a>
     <nav class="nav-links"><a href="#identitas">Identitas</a><a href="#modul">Modul</a><a href="#alur">Cara Belajar</a><a href="#guru">Untuk Guru</a><a href="#peringkat">Peringkat</a></nav>
-    <div class="row"><a class="btn btn-ghost btn-sm" href="#/masuk?t=guru">Masuk Guru</a><a class="btn btn-primary btn-sm shine" href="#/masuk">Masuk Siswa</a></div>
+    <div class="row">${sfxBtn()}<a class="btn btn-ghost btn-sm" href="#/masuk?t=guru">Masuk Guru</a><a class="btn btn-primary btn-sm shine" href="#/masuk">Masuk Siswa</a></div>
   </div></header>
   <section class="hero">
     <div class="blob" style="width:340px;height:340px;background:#c5b0ff;left:-80px;top:40px"></div><div class="blob" style="width:300px;height:300px;background:#ffc2de;right:-60px;bottom:20px;animation-delay:-3s"></div>

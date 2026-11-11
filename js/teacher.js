@@ -14,7 +14,7 @@ Gur.shell = function (el, ctx, tab, title, extra) {
       <div class="topic hide-m" style="background:var(--warm)"><b>🎧 Bantuan Lab</b><div class="small muted">Panduan guru & rubrik</div></div>
       <button class="btn btn-sm hide-m" style="background:var(--danger-s);color:var(--danger)" id="gout">⎋ Keluar Sesi</button></aside>
     <div><div class="g-top no-print"><div class="kelas-tabs" id="kt">${Gur.kelasList.map(k => `<button data-k="${k.kelas}" class="${k.kelas === Gur.kelas ? 'on' : ''}">Kelas ${k.kelas}</button>`).join('')}</div>
-      <div class="row"><span class="badge b-ok">● Lab Virtual Aktif</span><button class="btn btn-ghost btn-sm" data-act="lup">🔍</button><div style="text-align:right;line-height:1.2"><b class="small">${esc(nama)}</b><div class="tiny muted">Guru KKA · Kelas VII · Fase D</div></div><span class="avatar-i" style="background:var(--primary);color:#fff">👤</span></div></div>
+      <div class="row">${sfxBtn()}<span class="badge b-ok">● Lab Virtual Aktif</span><button class="btn btn-ghost btn-sm" data-act="lup">🔍</button><div style="text-align:right;line-height:1.2"><b class="small">${esc(nama)}</b><div class="tiny muted">Guru KKA · Kelas VII · Fase D</div></div><span class="avatar-i" style="background:var(--primary);color:#fff">👤</span></div></div>
       <main class="g-main" id="gm"></main></div></div>`;
   $$('#kt button', el).forEach(b => b.onclick = () => { Gur.kelas = b.dataset.k; localStorage.setItem('ddd_kelas', Gur.kelas); window.refresh(); });
   $('#gout', el).onclick = () => { Sesi.clear(); API.demo = false; location.hash = '#/'; };
@@ -84,7 +84,7 @@ Views.gOverview = function (el, ctx) {
 Views.gLog = function (el, ctx) {
   const m = Gur.shell(el, ctx, 'log'); let st = { siswaId: ctx.q.siswa || '', asesmen: ctx.q.asesmen || '', percobaan: 0 };
   const muat = () => Gur.load(m, 'guru.log', { kelas: Gur.kelas, siswaId: st.siswaId, asesmen: st.asesmen, percobaan: st.percobaan }, d => {
-    st.siswaId = d.siswa ? d.siswa.id : ''; st.asesmen = d.pilih;
+    st.siswaId = d.siswa ? d.siswa.id : ''; st.asesmen = d.pilih; Soal.teks = d.teks || [];
     if (!d.siswa) { m.innerHTML = Gur.head('Log Aktivitas & Jawaban', 'Log Aktivitas & Detail Jawaban', '') + '<div class="card center mt">Belum ada siswa di kelas ini. Tambahkan lewat menu Impor.</div>'; return; }
     const pc = d.pcSel, asm = d.asesmenList.find(a => a.id === d.pilih) || {};
     m.innerHTML = Gur.head('Log Aktivitas', `Log Aktivitas & Detail Jawaban <span class="badge" style="font-size:12px;vertical-align:middle">Siswa: ${esc(d.siswa.nama)} (NIS: ${esc(d.siswa.nis)})</span>`, '', `<a class="btn btn-soft" href="${ctx.base}/overview">← Kembali ke Overview</a><button class="btn btn-primary" onclick="print()">📄 Unduh Riwayat (PDF)</button>`) + `
@@ -231,17 +231,17 @@ Views.gImpor = function (el, ctx) {
 
 // ---------------- BANK SOAL: guru menambah / mengubah soal langsung dari dashboard ----------------
 Views.gSoal = function (el, ctx) {
-  const m = Gur.shell(el, ctx, 'soal'); const S = { id: ctx.q.id || '', list: [], dirty: false, edit: null, waktu: 0, d: null }; let E = null, uploading = false;
+  const m = Gur.shell(el, ctx, 'soal'); const S = { id: ctx.q.id || '', list: [], teks: [], dirty: false, edit: null, waktu: 0, d: null }; let E = null, TE = null, uploading = false;
   const JL = { PG: 'Pilihan Ganda', PGK: 'Pilihan Ganda Kompleks', KAT: 'Kategori (Benar/Salah)' };
-  const blank = j => j === 'PG' ? { jenis: 'PG', topik: '', kasus: '', gambar: '', tanya: '', opsi: { A: '', B: '', C: '', D: '' }, kunci: '', analisis: '' }
-    : j === 'PGK' ? { jenis: 'PGK', topik: '', kasus: '', gambar: '', tanya: 'Pilih semua jawaban yang benar. ', opsi: { A: '', B: '', C: '', D: '', E: '' }, kunci: [], analisis: '' }
-    : { jenis: 'KAT', topik: '', kasus: '', gambar: '', tanya: 'Tentukan apakah setiap pernyataan berikut benar atau salah.', pernyataan: ['', ''], kolom: ['Benar', 'Salah'], kunci: [0, 0], analisis: '' };
+  const blank = j => j === 'PG' ? { jenis: 'PG', teksId: '', kompetensi: '', level: '', topik: '', kasus: '', gambar: '', tanya: '', opsi: { A: '', B: '', C: '', D: '' }, kunci: '', analisis: '' }
+    : j === 'PGK' ? { jenis: 'PGK', teksId: '', kompetensi: '', level: '', topik: '', kasus: '', gambar: '', tanya: 'Pilih semua jawaban yang benar. ', opsi: { A: '', B: '', C: '', D: '', E: '' }, kunci: [], analisis: '' }
+    : { jenis: 'KAT', teksId: '', kompetensi: '', level: '', topik: '', kasus: '', gambar: '', tanya: 'Tentukan apakah setiap pernyataan berikut benar atau salah.', pernyataan: ['', ''], kolom: ['Benar', 'Salah'], kunci: [0, 0], analisis: '' };
   const clone = o => JSON.parse(JSON.stringify(o));
   const ringkasKunci = q => q.jenis === 'PG' ? 'Kunci: ' + q.kunci : q.jenis === 'PGK' ? 'Kunci: ' + (q.kunci || []).join(', ') : 'Kunci: ' + (q.kunci || []).map((k, i) => (i + 1) + '=' + q.kolom[k]).join(' · ');
   const muat = async id => {
     m.innerHTML = Stu.skeleton + Stu.skeleton; const r = await api('guru.soalAmbil', { id: id || S.id });
     if (!r.success) return Gur.err(m, r);
-    S.d = r.data; S.id = r.data.id; S.list = r.data.soal.map(q => { const o = clone(q); delete o.no; o.jenis = o.jenis || 'PG'; o.topik = o.topik || ''; o.kasus = o.kasus || ''; o.gambar = o.gambar || ''; return o; }); S.waktu = r.data.waktuMenit; S.dirty = false; S.edit = null; E = null; window.onbeforeunload = null; draw();
+    S.d = r.data; S.teks = clone(r.data.teks || []); TE = null; S.id = r.data.id; S.list = r.data.soal.map(q => { const o = clone(q); delete o.no; o.jenis = o.jenis || 'PG'; o.topik = o.topik || ''; o.kasus = o.kasus || ''; o.gambar = o.gambar || ''; o.teksId = o.teksId || ''; o.kompetensi = o.kompetensi || ''; o.level = o.level || ''; return o; }); S.waktu = r.data.waktuMenit; S.dirty = false; S.edit = null; E = null; window.onbeforeunload = null; draw();
   };
   const tandai = () => { S.dirty = true; window.onbeforeunload = () => 'Perubahan soal belum disimpan.'; };
   const editorHtml = () => {
@@ -253,9 +253,10 @@ Views.gSoal = function (el, ctx) {
       <div class="bs-pern"><span class="h" style="text-align:left">PERNYATAAN</span><span class="h">${esc(q.kolom[0])}</span><span class="h">${esc(q.kolom[1])}</span><span></span></div>
       ${q.pernyataan.map((p, i) => `<div class="bs-pern"><input type="text" data-p="${i}" value="${esc(p)}" placeholder="Tulis pernyataan ${i + 1}"><label class="center" style="margin:0"><input class="k" type="radio" name="kp${i}" data-kp="${i}" data-v="0" ${q.kunci[i] === 0 ? 'checked' : ''}></label><label class="center" style="margin:0"><input class="k" type="radio" name="kp${i}" data-kp="${i}" data-v="1" ${q.kunci[i] === 1 ? 'checked' : ''}></label><button class="btn btn-sm btn-ghost" data-rp="${i}" title="Hapus pernyataan" ${q.pernyataan.length <= 2 ? 'disabled' : ''}>✕</button></div>`).join('')}
       <button class="btn btn-soft btn-sm" id="ap" ${q.pernyataan.length >= 8 ? 'disabled' : ''}>＋ Tambah pernyataan</button>`;
-    return `<div class="bs-ed fadeup"><div class="row between wrap"><h3>${S.edit === 'baru' ? '＋ Soal Baru' : '✎ Ubah Soal ' + (S.edit + 1)}</h3><div class="chips">${['PG', 'PGK', 'KAT'].map(x => `<button class="chip ${x === j ? 'on' : ''}" data-j="${x}">${JL[x]}</button>`).join('')}</div></div>
+    return `<div class="bs-ed fadeup" id="bsq"><div class="row between wrap"><h3>${S.edit === 'baru' ? '＋ Soal Baru' : '✎ Ubah Soal ' + (S.edit + 1)}</h3><div class="chips">${['PG', 'PGK', 'KAT'].map(x => `<button class="chip ${x === j ? 'on' : ''}" data-j="${x}">${JL[x]}</button>`).join('')}</div></div>
       <div class="grid g2 mt" style="gap:12px"><div><label>Topik / judul singkat</label><input id="ft" value="${esc(q.topik)}" placeholder="contoh: Cek fakta"></div><div><label>Gambar pendukung (opsional)</label><div class="bs-img">${q.gambar ? `<img src="${esc(q.gambar)}" alt="">` : ''}<label class="btn btn-soft btn-sm" style="margin:0;cursor:pointer">📷 ${q.gambar ? 'Ganti' : 'Pilih'} gambar<input type="file" id="fg" accept="image/*" class="hide"></label>${q.gambar ? '<button class="btn btn-sm btn-ghost" id="hg">Hapus gambar</button>' : ''}<span class="tiny muted" id="ug">${uploading ? '⏳ mengunggah…' : ''}</span></div></div></div>
-      <label class="mt">Teks cerita / stimulus (opsional)</label><textarea id="fk" style="min-height:70px" placeholder="Tulis kasus atau bacaan singkat jika diperlukan.">${esc(q.kasus)}</textarea>
+      <div class="grid g3 mt" style="gap:12px"><div><label>Teks bacaan (stimulus)</label><select id="fx"><option value="">— tanpa teks bacaan —</option>${S.teks.map(x => `<option value="${x.id}" ${E.teksId === x.id ? 'selected' : ''}>${esc(x.id)} · ${esc(x.judul)}</option>`).join('')}</select></div><div><label>Kompetensi</label><select id="fkm"><option value="">—</option>${['Pemahaman Tekstual', 'Pemahaman Inferensial', 'Evaluasi dan Apresiasi'].map(k => `<option ${E.kompetensi === k ? 'selected' : ''}>${k}</option>`).join('')}</select></div><div><label>Level kognitif</label><select id="flv"><option value="">—</option>${[1, 2, 3].map(k => `<option value="${k}" ${+E.level === k ? 'selected' : ''}>Level ${k}${k === 1 ? ' (pemahaman)' : k === 2 ? ' (penerapan)' : ' (penalaran)'}</option>`).join('')}</select></div></div>
+      <label class="mt">Teks cerita / stimulus tambahan (opsional)</label><textarea id="fk" style="min-height:70px" placeholder="Tulis kasus atau bacaan singkat jika diperlukan.">${esc(q.kasus)}</textarea>
       <label class="mt">Pertanyaan *</label><textarea id="fq" style="min-height:80px" placeholder="Tulis pertanyaan di sini">${esc(q.tanya)}</textarea>
       <label class="mt">${j === 'PG' ? 'Pilihan jawaban — pilih satu kunci' : j === 'PGK' ? 'Pilihan jawaban — centang SEMUA yang benar' : 'Pernyataan — tentukan kuncinya'}</label>${kunciHtml}
       <label class="mt">Pembahasan / analisis (tampil setelah siswa mengirim)</label><textarea id="fa" style="min-height:70px" placeholder="Jelaskan mengapa jawabannya demikian.">${esc(q.analisis)}</textarea>
@@ -269,8 +270,9 @@ Views.gSoal = function (el, ctx) {
     return '';
   };
   const bindEditor = () => {
-    const box = $('.bs-ed', m); if (!box) return;
-    $$('[data-j]', box).forEach(b => b.onclick = () => { if (b.dataset.j === E.jenis) return; const keep = { topik: E.topik, kasus: E.kasus, gambar: E.gambar, analisis: E.analisis }; E = Object.assign(blank(b.dataset.j), keep); draw(); });
+    const box = $('#bsq', m); if (!box) return;
+    $$('[data-j]', box).forEach(b => b.onclick = () => { if (b.dataset.j === E.jenis) return; const keep = { topik: E.topik, kasus: E.kasus, gambar: E.gambar, analisis: E.analisis, teksId: E.teksId, kompetensi: E.kompetensi, level: E.level }; E = Object.assign(blank(b.dataset.j), keep); draw(); });
+    $('#fx', box).onchange = e => E.teksId = e.target.value; $('#fkm', box).onchange = e => E.kompetensi = e.target.value; $('#flv', box).onchange = e => E.level = e.target.value ? +e.target.value : '';
     $('#ft', box).oninput = e => E.topik = e.target.value; $('#fk', box).oninput = e => E.kasus = e.target.value; $('#fq', box).oninput = e => E.tanya = e.target.value; $('#fa', box).oninput = e => E.analisis = e.target.value;
     $$('[data-o]', box).forEach(i => i.oninput = e => E.opsi[i.dataset.o] = e.target.value);
     $$('[data-kunci]', box).forEach(i => i.onchange = () => { const L = i.dataset.kunci; if (E.jenis === 'PG') E.kunci = L; else { i.checked ? (E.kunci.indexOf(L) < 0 && E.kunci.push(L)) : (E.kunci = E.kunci.filter(x => x !== L)); } });
@@ -293,13 +295,43 @@ Views.gSoal = function (el, ctx) {
     $('#bt', box).onclick = () => { S.edit = null; E = null; draw(); };
     $('#sp', box).onclick = () => { const msg = cek(E); if (msg) return toast(msg, 'err'); const q = clone(E); if (q.jenis === 'PG') { delete q.pernyataan; delete q.kolom; } else if (q.jenis === 'PGK') { delete q.pernyataan; delete q.kolom; q.opsi = Object.fromEntries(Object.entries(q.opsi)); } else delete q.opsi; if (S.edit === 'baru') S.list.push(q); else S.list[S.edit] = q; tandai(); S.edit = null; E = null; draw(); toast('Soal masuk ke daftar. Jangan lupa tekan “Simpan Perubahan”.', 'ok'); };
   };
+
+  const kataTeks = x => x.bagian.reduce((a, b) => a + b.paragraf.join(' ').split(/\s+/).filter(Boolean).length, 0);
+  const teksSection = () => `<div class="card mt2"><div class="row between wrap"><div><h3 style="font-size:19px">📄 Teks Bacaan (stimulus)</h3><div class="small muted">Satu teks dapat dipakai beberapa soal. Pilih teksnya saat menulis soal.</div></div>${TE ? '' : '<button class="btn btn-soft" id="at">＋ Tambah Teks Bacaan</button>'}</div>
+    ${S.teks.map((x, i) => `<div class="q" style="margin-top:10px"><span class="no" style="font-size:12px">${esc(x.id)}</span><div class="grow" style="min-width:0"><b>${esc(x.judul)}</b><div class="tiny muted">${esc(x.jenis)} · ${kataTeks(x)} kata · dipakai ${S.list.filter(q => q.teksId === x.id).length} soal${x.bagian.length > 1 ? ' · ' + x.bagian.length + ' bagian' : ''}</div></div><div class="row" style="gap:4px"><button class="btn btn-sm btn-soft" data-et="${i}">✎ Ubah</button><button class="btn btn-sm btn-ghost" style="color:var(--danger)" data-dt="${i}">🗑</button></div></div>`).join('') || '<div class="small muted mt">Belum ada teks bacaan.</div>'}
+    ${TE ? teksEditor() : ''}</div>`;
+  const teksEditor = () => `<div class="bs-ed fadeup mt"><h3>${TE.i === 'baru' ? '＋ Teks Bacaan Baru' : '✎ Ubah Teks ' + esc(TE.o.id)}</h3>
+    <div class="grid g2 mt" style="gap:12px"><div><label>Judul teks *</label><input id="tj" value="${esc(TE.o.judul)}"></div><div><label>Jenis teks</label><select id="tjn">${['Teks Informasi', 'Teks Fiksi (Cerita Pendek)', 'Teks Jamak (Teks A dan Teks B)', 'Infografik / Tabel'].map(k => `<option ${TE.o.jenis === k ? 'selected' : ''}>${k}</option>`).join('')}</select></div></div>
+    ${TE.o.bagian.map((b, j) => `<div class="card mt" style="padding:12px"><div class="row between wrap"><b class="small">Bagian ${j + 1}</b>${TE.o.bagian.length > 1 ? `<button class="btn btn-sm btn-ghost" data-rb="${j}">✕ Hapus bagian</button>` : ''}</div>
+      <div class="grid g2 mt" style="gap:10px"><div><label>Label (opsional, mis. Teks A)</label><input data-bl="${j}" value="${esc(b.label || '')}"></div><div><label>Judul bagian (opsional)</label><input data-bj="${j}" value="${esc(b.judul || '')}"></div></div>
+      <label class="mt">Isi bacaan * <span class="tiny muted">(pisahkan paragraf dengan baris kosong)</span></label><textarea data-bp="${j}" style="min-height:150px">${esc(b.paragraf.join('\n\n'))}</textarea>
+      <div class="bs-img mt">${b.gambar ? `<img src="${esc(b.gambar)}" alt="">` : ''}<label class="btn btn-soft btn-sm" style="margin:0;cursor:pointer">📷 ${b.gambar ? 'Ganti' : 'Tambah'} gambar<input type="file" data-bg="${j}" accept="image/*" class="hide"></label>${b.gambar ? `<button class="btn btn-sm btn-ghost" data-hg="${j}">Hapus gambar</button>` : ''}</div></div>`).join('')}
+    <div class="row mt2 wrap">${TE.o.bagian.length < 3 ? '<button class="btn btn-soft btn-sm" id="ab">＋ Tambah bagian (teks jamak)</button>' : ''}<span class="grow"></span><button class="btn btn-ghost" id="tb">Batal</button><button class="btn btn-primary shine" id="ts">✓ Simpan Teks ke Daftar</button></div></div>`;
+  const bindTeks = () => {
+    const at = $('#at', m); if (at) at.onclick = () => { const mx = Math.max(0, ...S.teks.map(x => +x.id.slice(1))); TE = { i: 'baru', o: { id: 'T' + (mx + 1), judul: '', jenis: 'Teks Informasi', bagian: [{ paragraf: [''] }] } }; draw(); };
+    $$('[data-et]', m).forEach(b => b.onclick = () => { TE = { i: +b.dataset.et, o: clone(S.teks[+b.dataset.et]) }; draw(); });
+    $$('[data-dt]', m).forEach(b => b.onclick = async () => { const x = S.teks[+b.dataset.dt], n = S.list.filter(q => q.teksId === x.id).length; if (!(await confirmBox('Hapus teks ' + x.id + '?', n ? n + ' soal yang memakai teks ini akan kehilangan teks bacaannya.' : 'Teks dihapus dari daftar setelah Simpan Perubahan.', 'Ya, hapus'))) return; S.list.forEach(q => { if (q.teksId === x.id) q.teksId = ''; }); S.teks.splice(+b.dataset.dt, 1); tandai(); draw(); });
+    const box = $('.bs-ed', m); if (!TE || !$('#ts', m)) return;
+    const sync = () => { TE.o.judul = $('#tj', m).value; TE.o.jenis = $('#tjn', m).value; TE.o.bagian.forEach((b, j) => { b.label = $('[data-bl="' + j + '"]', m).value; b.judul = $('[data-bj="' + j + '"]', m).value; b.paragraf = $('[data-bp="' + j + '"]', m).value.split(/\n\s*\n/).map(x => x.trim()).filter(Boolean); if (!b.paragraf.length) b.paragraf = ['']; }); };
+    $$('[data-rb]', m).forEach(b => b.onclick = () => { sync(); TE.o.bagian.splice(+b.dataset.rb, 1); draw(); });
+    const ab = $('#ab', m); if (ab) ab.onclick = () => { sync(); TE.o.bagian.push({ label: 'Teks ' + 'ABC'[TE.o.bagian.length], paragraf: [''] }); draw(); };
+    $$('[data-hg]', m).forEach(b => b.onclick = () => { sync(); delete TE.o.bagian[+b.dataset.hg].gambar; draw(); });
+    $$('[data-bg]', m).forEach(inp => inp.onchange = async e => {
+      const f = e.target.files[0]; if (!f) return; if (API.demo) return toast('Mode pratinjau: unggah gambar dinonaktifkan.', 'err'); sync(); toast('Mengunggah gambar…');
+      try { const url = await new Promise((ok, no) => { const fr = new FileReader(); fr.onload = () => { const im = new Image(); im.onload = () => { const sc = Math.min(1, 1280 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * sc); c.height = Math.round(im.height * sc); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', .82)); }; im.onerror = no; im.src = fr.result; }; fr.onerror = no; fr.readAsDataURL(f); });
+        const r = await api('guru.unggahGambar', { mime: 'image/jpeg', data: url }, { timeout: 60000 }); if (!r.success) throw new Error(r.message); TE.o.bagian[+inp.dataset.bg].gambar = r.data.url; toast('Gambar terunggah ✓', 'ok'); } catch (er) { toast('Gagal mengunggah: ' + (er.message || 'coba gambar lain'), 'err'); }
+      draw(); });
+    $('#tb', m).onclick = () => { TE = null; draw(); };
+    $('#ts', m).onclick = () => { sync(); if (!TE.o.judul.trim()) return toast('Judul teks belum diisi.', 'err'); if (TE.o.bagian.some(b => !b.paragraf.join('').trim())) return toast('Isi bacaan belum lengkap.', 'err'); const o = clone(TE.o); o.bagian.forEach(b => { if (!b.label) delete b.label; if (!b.judul) delete b.judul; }); if (TE.i === 'baru') S.teks.push(o); else S.teks[TE.i] = o; TE = null; tandai(); draw(); toast('Teks masuk ke daftar. Jangan lupa tekan “Simpan Perubahan”.', 'ok'); };
+  };
   const draw = () => {
     const d = S.d, sum = d.jenis === 'Sumatif';
     m.innerHTML = Gur.head('Bank Soal', 'Bank Soal Asesmen', 'Tambah, ubah, urutkan, atau hapus soal langsung di sini — tanpa membuka Google Sheets. Siswa langsung melihat soal terbaru setelah kamu menyimpan.') + `
     <div class="card mt"><div class="chips">${d.daftar.map(a => `<button class="chip ${a.id === S.id ? 'on' : ''}" data-a="${a.id}">${a.jenis === 'Sumatif' ? '🏆' : '📝'} ${esc(a.judul.replace('Asesmen ', ''))}</button>`).join('')}</div>
       <div class="row wrap mt"><span class="badge">${S.list.length} soal</span>${sum ? `<label class="row" style="margin:0;gap:6px">⏱ Waktu ujian <input id="wk" type="number" min="5" max="180" value="${S.waktu}" style="width:84px"> menit</label>` : ''}<span class="small muted">Bentuk soal: pilihan ganda · pilihan ganda kompleks · kategori (Benar/Salah atau Sesuai/Tidak Sesuai)</span></div>
       ${d.pengerjaan > 0 ? `<div class="card warm mt small">⚠️ <b>Sudah ada ${d.pengerjaan} pengerjaan siswa</b> pada asesmen ini. Nilai yang sudah tercatat tidak berubah, tetapi mengubah, menghapus, atau mengurutkan soal membuat tinjauan jawaban lama tidak cocok. Sebaiknya ubah soal sebelum dipakai siswa.</div>` : ''}${API.demo ? '<div class="card mt small" style="background:var(--lav2)">👀 Pratinjau: ini contoh tampilan. Kunci jawaban tidak ditampilkan dan perubahan tidak dapat disimpan.</div>' : ''}</div>
-    <div class="bs-list mt2">${S.list.map((q, i) => `<div class="q"><span class="no">${i + 1}</span><div class="grow" style="min-width:0"><div class="row wrap" style="gap:6px"><span class="badge">${JL[q.jenis || 'PG']}</span><span class="badge b-warm">${esc(q.topik || 'Umum')}</span>${q.gambar ? '<span class="badge">🖼 ada gambar</span>' : ''}${q.kasus ? '<span class="badge">📖 ada cerita</span>' : ''}</div><div class="mt" style="font-weight:700">${esc(q.tanya.length > 160 ? q.tanya.slice(0, 160) + '…' : q.tanya)}</div><div class="tiny muted mt">${esc(ringkasKunci(q))}</div></div>
+    ${teksSection()}
+    <div class="bs-list mt2">${S.list.map((q, i) => `<div class="q"><span class="no">${i + 1}</span><div class="grow" style="min-width:0"><div class="row wrap" style="gap:6px"><span class="badge">${JL[q.jenis || 'PG']}</span><span class="badge b-warm">${esc(q.topik || 'Umum')}</span>${q.teksId ? `<span class="badge">📄 ${esc(q.teksId)}</span>` : ''}${q.level ? `<span class="badge b-warm">Level ${q.level}</span>` : ''}${q.gambar ? '<span class="badge">🖼 ada gambar</span>' : ''}${q.kasus ? '<span class="badge">📖 ada cerita</span>' : ''}</div><div class="mt" style="font-weight:700">${esc(q.tanya.length > 160 ? q.tanya.slice(0, 160) + '…' : q.tanya)}</div><div class="tiny muted mt">${esc(ringkasKunci(q))}</div></div>
       <div class="col" style="gap:6px"><div class="row" style="gap:4px"><button class="btn btn-sm btn-ghost" data-up="${i}" ${i ? '' : 'disabled'} title="Naikkan">↑</button><button class="btn btn-sm btn-ghost" data-dn="${i}" ${i < S.list.length - 1 ? '' : 'disabled'} title="Turunkan">↓</button></div><div class="row" style="gap:4px"><button class="btn btn-sm btn-soft" data-ed="${i}">✎ Ubah</button><button class="btn btn-sm btn-ghost" data-cp="${i}" title="Gandakan">⎘</button><button class="btn btn-sm btn-ghost" style="color:var(--danger)" data-rm="${i}" title="Hapus">🗑</button></div></div></div>`).join('') || '<div class="card center muted">Belum ada soal. Tekan “Tambah Soal”.</div>'}</div>
     ${S.edit !== null ? editorHtml() : `<div class="row wrap mt2 no-print"><span class="small muted" style="font-weight:800">＋ TAMBAH SOAL:</span>${['PG', 'PGK', 'KAT'].map(x => `<button class="btn btn-soft" data-add="${x}">＋ ${JL[x]}</button>`).join('')}</div>`}
     ${S.dirty ? `<div class="sticky-save no-print"><span>✏️ Ada perubahan yang belum disimpan</span><div class="row"><button class="btn btn-sm" style="background:#fff;color:var(--text)" id="bt2">Batalkan</button><button class="btn btn-green shine" id="sv">💾 Simpan Perubahan</button></div></div>` : ''}`;
@@ -311,12 +343,12 @@ Views.gSoal = function (el, ctx) {
     $$('[data-dn]', m).forEach(b => b.onclick = () => { const i = +b.dataset.dn;[S.list[i + 1], S.list[i]] = [S.list[i], S.list[i + 1]]; tandai(); draw(); });
     $$('[data-cp]', m).forEach(b => b.onclick = () => { const i = +b.dataset.cp; S.list.splice(i + 1, 0, clone(S.list[i])); tandai(); draw(); });
     $$('[data-rm]', m).forEach(b => b.onclick = async () => { if (await confirmBox('Hapus soal ' + (+b.dataset.rm + 1) + '?', 'Soal dihapus dari daftar setelah kamu menekan Simpan Perubahan.', 'Ya, hapus')) { S.list.splice(+b.dataset.rm, 1); tandai(); draw(); } });
-    bindEditor();
+    bindEditor(); bindTeks();
     const bt = $('#bt2', m); if (bt) bt.onclick = () => muat(S.id);
     const sv = $('#sv', m); if (sv) sv.onclick = async () => {
       if (S.d.pengerjaan > 0 && !(await confirmBox('Simpan perubahan soal?', 'Sudah ada pengerjaan siswa. Tinjauan jawaban lama bisa tidak cocok dengan soal baru. Nilai tercatat tidak berubah.', 'Ya, simpan'))) return;
       sv.disabled = true; sv.textContent = 'Menyimpan…';
-      const r = await api('guru.soalSimpan', { id: S.id, soal: S.list, waktuMenit: S.waktu });
+      const r = await api('guru.soalSimpan', { id: S.id, soal: S.list, teks: S.teks, waktuMenit: S.waktu });
       if (!r.success) { toast(r.message, 'err'); sv.disabled = false; sv.textContent = '💾 Simpan Perubahan'; return; }
       toast(r.message, 'ok'); Confetti.go(50); dropCache(); muat(S.id);
     };

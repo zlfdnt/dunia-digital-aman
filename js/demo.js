@@ -19,7 +19,7 @@ const Demo = {
   app_boot() { return { app: { nama: 'Menjelajahi Dunia Digital dengan Aman', kkm: 72 }, kelas: ['7A', '7B', '7C'] }; },
   guru_soalAmbil(x) {
     const daftar = PV.akt.filter(a => /Formatif|Sumatif/.test(a.jenis)), a = daftar.find(z => z.id === x.id) || daftar[0];
-    return { daftar: daftar.map(z => ({ id: z.id, judul: z.judul, jenis: z.jenis })), id: a.id, judul: a.judul, jenis: a.jenis, waktuMenit: a.data.waktuMenit, pengerjaan: 0,
+    return { daftar: daftar.map(z => ({ id: z.id, judul: z.judul, jenis: z.jenis })), id: a.id, judul: a.judul, jenis: a.jenis, waktuMenit: a.data.waktuMenit, pengerjaan: 0, teks: a.data.teks || [],
       soal: a.data.soal.map(q => Object.assign({ jenis: 'PG' }, q, { kunci: q.jenis === 'PGK' ? ['A'] : q.jenis === 'KAT' ? q.pernyataan.map(() => 0) : 'A', analisis: '' })) };
   },
   app_peringkat() { return { kosong: true, top: [], juaraKelas: [], perAsesmen: [], sampai: '' }; },

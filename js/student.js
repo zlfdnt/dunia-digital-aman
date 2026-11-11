@@ -9,7 +9,7 @@ Stu.shell = function (el, ctx, o) {
   el.innerHTML = (API.demo ? `<div class="preview-bar">👀 Mode Pratinjau — data contoh, tidak bisa diubah <a href="#/masuk">Masuk</a> <a href="#/">Keluar</a></div>` : '') +
     `<header class="s-top"><div class="in">${o.back ? `<a class="back" href="${o.back}" aria-label="Kembali">←</a>` : `<img src="assets/img/logo.svg" width="40" height="40" alt="">`}
       <div class="grow" style="min-width:0"><h4 style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(o.title || 'Dunia Digital Aman')}</h4><div class="small muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(o.sub || 'Koding & KA · Kelas VII · Fase D')}</div></div>
-      <a class="avatar-sm" href="${ctx.base}/profil" title="${esc(nama)}">${nama ? esc(initials(nama)) : '🙂'}</a></div></header>
+      ${sfxBtn()}<a class="avatar-sm" href="${ctx.base}/profil" title="${esc(nama)}">${nama ? esc(initials(nama)) : '🙂'}</a></div></header>
     <main class="s-main" id="sm"></main>
     <nav class="s-nav">${nav.map(n => `<a href="${ctx.base}/${n[0]}" class="${o.tab === n[0] ? 'on' : ''}"><span class="i">${n[1]}</span>${n[2]}</a>`).join('')}</nav>`;
   Stu.cur = { m: $('#sm', el), base: ctx.base };
@@ -164,8 +164,8 @@ Stu.kegiatan = function (m, A, head, selesai) {
     m.innerHTML = head(i + 1, L.length) + (i === 0 ? `<div class="card warm mt"><p>${rich(D.narasi)}</p></div>` : '') + `<div class="card mt fadeup"><span class="badge">Tantangan ${i + 1}</span><h3 class="mt" style="font-size:20px">${rich(s.narasi)}</h3><div class="mt">${s.opsi.map((o, k) => `<button class="opt ${ok && o.benar ? 'ok' : ''} ${salah[k] ? 'bad' : ''}" data-k="${k}" ${ok || salah[k] ? 'disabled' : ''}><span class="dot">${ok && o.benar ? '✓' : salah[k] ? '✕' : 'ABC'[k]}</span><span>${esc(o.t)}</span></button>`).join('')}</div><div id="fb"></div></div>`;
     $$('.opt', m).forEach(b => b.onclick = () => {
       const k = +b.dataset.k, o = s.opsi[k];
-      if (o.benar) { ok = true; draw(); const fb = $('#fb', m); fb.innerHTML = `<div class="card mt pop" style="background:var(--green-l);border-color:var(--green)">${esc(o.umpan)}</div><button class="btn btn-primary btn-block mt shine" id="nx">${i < L.length - 1 ? 'Tantangan Berikutnya →' : 'Selesaikan Misi 🎉'}</button>`; $('#nx', m).onclick = () => { ok = false; salah = {}; if (i < L.length - 1) { i++; draw(); } else draw(true); }; }
-      else { salah[k] = 1; draw(); $('#fb', m).innerHTML = `<div class="card mt shake" style="background:var(--danger-s);border-color:#fca5a5">${esc(o.umpan)} Coba pilihan lain!</div>`; }
+      if (o.benar) { Sfx.skip = true; Sfx.play('ok'); ok = true; draw(); const fb = $('#fb', m); fb.innerHTML = `<div class="card mt pop" style="background:var(--green-l);border-color:var(--green)">${esc(o.umpan)}</div><button class="btn btn-primary btn-block mt shine" id="nx">${i < L.length - 1 ? 'Tantangan Berikutnya →' : 'Selesaikan Misi 🎉'}</button>`; $('#nx', m).onclick = () => { ok = false; salah = {}; if (i < L.length - 1) { i++; draw(); } else draw(true); }; }
+      else { Sfx.skip = true; Sfx.play('bad'); salah[k] = 1; draw(); $('#fb', m).innerHTML = `<div class="card mt shake" style="background:var(--danger-s);border-color:#fca5a5">${esc(o.umpan)} Coba pilihan lain!</div>`; }
     });
   };
   draw();
@@ -175,6 +175,10 @@ Stu.kegiatan = function (m, A, head, selesai) {
 //  Bagian bersama: gambar soal, tinjauan jawaban, identitas pelajaran
 // =====================================================================
 const Soal = {
+  teks: [],
+  teksHtml(T) {
+    return `<div class="tka-teks"><div class="tt-h"><span class="badge">${esc(T.jenis)}</span> <b>${esc(T.judul)}</b></div>${T.bagian.map(b => `${b.label ? `<div class="tt-lab">${esc(b.label)}${b.judul ? ': ' + esc(b.judul) : ''}</div>` : ''}${b.gambar ? `<div class="soal-img"><img src="${esc(b.gambar)}" alt="Gambar pada teks" loading="lazy"></div>` : ''}${b.paragraf.map(p => `<p>${rich(p)}</p>`).join('')}`).join('<hr class="tt-hr">')}</div>`;
+  },
   img: g => g ? `<div class="soal-img"><img src="${esc(g)}" alt="Gambar pendukung soal" loading="lazy"></div>` : '',
   jenisLabel: j => ({ PG: 'Pilihan Ganda', PGK: 'Pilihan Ganda Kompleks', KAT: 'Pilihan Ganda Kompleks (Kategori)' }[j || 'PG']),
   badge(h) { return h.kredit === 1 || (h.kredit === undefined && h.benar) ? '<span class="badge b-ok">✓ Benar</span>' : h.kredit > 0 ? `<span class="badge b-amber">◐ Sebagian (${h.kredit})</span>` : '<span class="badge b-red">✕ Perlu dievaluasi</span>'; },
@@ -190,7 +194,9 @@ const Soal = {
       const js = Array.isArray(h.jawab) ? h.jawab : [];
       body = `<div class="tb-wrap"><table class="tb"><thead><tr><th>Pernyataan</th><th>Jawaban siswa</th><th>Kunci</th></tr></thead><tbody>${h.pernyataan.map((p, i) => { const ok = js[i] === h.kunci[i]; return `<tr class="${ok ? '' : 'red'}"><td>${rich(p)}</td><td>${js[i] === null || js[i] === undefined ? '<i class="muted">kosong</i>' : esc(h.kolom[js[i]])} ${ok ? '✓' : '✕'}</td><td><b>${esc(h.kolom[h.kunci[i]])}</b></td></tr>`; }).join('')}</tbody></table></div>`;
     }
-    return `${h.kasus ? `<p class="small muted">${rich(h.kasus)}</p>` : ''}${Soal.img(h.gambar)}<p><b>${rich(h.tanya)}</b></p><div class="mt">${body}</div><div class="card warm mt small"><b>Analisis:</b> ${rich(h.analisis)}</div>`;
+    const T = h.teksId ? (Soal.teks || []).find(x => x.id === h.teksId) : null;
+    const meta = h.kompetensi ? `<div class="row wrap" style="margin-bottom:8px;gap:6px"><span class="badge">${esc(h.kompetensi)}</span><span class="badge b-warm">Level ${h.level}</span></div>` : '';
+    return `${meta}${T ? `<details class="mb"><summary class="small" style="cursor:pointer;font-weight:800;color:var(--primary-d)">📄 Lihat teks bacaan: ${esc(T.judul)}</summary>${Soal.teksHtml(T)}</details>` : ''}${h.kasus ? `<p class="small muted">${rich(h.kasus)}</p>` : ''}${Soal.img(h.gambar)}<p><b>${rich(h.tanya)}</b></p><div class="mt">${body}</div><div class="card warm mt small"><b>Analisis:</b> ${rich(h.analisis)}</div>`;
   }
 };
 Stu.identitas = function (b, open) {
@@ -245,7 +251,7 @@ Stu.bindMat = root => $$('[data-fsim]', root).forEach(btn => btn.onclick = () =>
   btn.textContent = '✕ Tutup simulasi'; panel.classList.remove('hide');
   panel.innerHTML = `<div class="search-box"><span class="qv">🔎 </span><button class="btn btn-green btn-sm" disabled>Cari</button></div><div class="res"></div>`;
   const qv = $('.qv', panel), go = $('.btn', panel), res = $('.res', panel); let i = 0;
-  const iv = setInterval(() => { qv.textContent = '🔎 ' + it.kueri.slice(0, ++i) + (i < it.kueri.length ? '▏' : ''); if (i >= it.kueri.length) { clearInterval(iv); go.disabled = false; go.classList.add('pulse-glow'); } }, 55); _timers.push(iv);
+  const iv = setInterval(() => { Sfx.play('type'); qv.textContent = '🔎 ' + it.kueri.slice(0, ++i) + (i < it.kueri.length ? '▏' : ''); if (i >= it.kueri.length) { clearInterval(iv); go.disabled = false; go.classList.add('pulse-glow'); } }, 55); _timers.push(iv);
   go.onclick = () => { go.classList.remove('pulse-glow'); res.innerHTML = '<div class="fadeup">' + Stu.simHasil(it.hasil) + '</div>'; };
 });
 Stu.materi = function (m, A, head, selesai) {
@@ -290,8 +296,8 @@ Stu.lab = function (m, A, head, selesai) {
       const c = $('#cari', m); if (c) c.onclick = () => { cari = true; sudah = true; draw(); setTimeout(() => $('#ops', m) && $('#ops', m).scrollIntoView({ behavior: 'smooth', block: 'center' }), 600); };
       $$('.opt[data-id]', m).forEach(b => b.onclick = () => {
         const o = K.opsi.find(x => x.id === b.dataset.id);
-        if (o.benar) { benar = true; draw(); Confetti.go(90); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }
-        else { b.classList.add('bad', 'shake'); b.disabled = true; $('#fb', m).innerHTML = `<div class="card mt" style="background:var(--danger-s);border-color:#fca5a5">${esc(D.gagal)}</div>`; }
+        if (o.benar) { Sfx.skip = true; benar = true; draw(); Confetti.go(90); window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }
+        else { Sfx.skip = true; Sfx.play('bad'); b.classList.add('bad', 'shake'); b.disabled = true; $('#fb', m).innerHTML = `<div class="card mt" style="background:var(--danger-s);border-color:#fca5a5">${esc(D.gagal)}</div>`; }
       });
       const f = $('#fin', m); if (f) f.onclick = () => { if (last) selesai(f); else { si++; run(); scrollTo(0, 0); } };
     };
@@ -326,8 +332,8 @@ Stu.tantangan = function (m, A, head, selesai) {
       <div class="card mt"><h3 style="font-size:18px">${esc(S.tanya)}</h3><div class="mt">${S.opsi.map((o, k) => `<button class="opt ${ok && o.benar ? 'ok' : ''} ${salahIni[k] ? 'bad' : ''}" data-k="${k}" ${ok || salahIni[k] ? 'disabled' : ''}><span class="dot">${ok && o.benar ? '✓' : salahIni[k] ? '✕' : 'ABCD'[k]}</span><span>${esc(o.t)}</span></button>`).join('')}</div><div id="fb"></div></div>`;
       $$('.opt', m).forEach(b => b.onclick = () => {
         const k = +b.dataset.k, o = S.opsi[k];
-        if (o.benar) { ok = true; if (pertama[i] === null) pertama[i] = true; draw(); Confetti.go(50); const r = D.aturan[S.aturan]; $('#fb', m).innerHTML = `<div class="card mt pop" style="background:var(--green-l);border-color:var(--green)">${esc(o.umpan)}<div class="mt small">🧠 <b>Aturan yang dipakai:</b> ${rich(r)}</div></div><button class="btn btn-primary btn-block mt shine" id="nx">${i < N - 1 ? 'Skenario Berikutnya →' : 'Lihat Refleksi & Evaluasi →'}</button>`; $('#nx', m).onclick = () => { i < N - 1 ? scen(i + 1) : akhir(); scrollTo(0, 0); }; }
-        else { salahIni[k] = 1; if (pertama[i] === null) pertama[i] = false; shield = Math.max(0, shield - 15); draw(); $('#fb', m).innerHTML = `<div class="card mt shake" style="background:var(--danger-s);border-color:#fca5a5">${esc(o.umpan)} <b>(−15% Perisai)</b> Coba pilihan lain!</div>`; }
+        if (o.benar) { Sfx.skip = true; Sfx.play('ok'); ok = true; if (pertama[i] === null) pertama[i] = true; draw(); const r = D.aturan[S.aturan]; $('#fb', m).innerHTML = `<div class="card mt pop" style="background:var(--green-l);border-color:var(--green)">${esc(o.umpan)}<div class="mt small">🧠 <b>Aturan yang dipakai:</b> ${rich(r)}</div></div><button class="btn btn-primary btn-block mt shine" id="nx">${i < N - 1 ? 'Skenario Berikutnya →' : 'Lihat Refleksi & Evaluasi →'}</button>`; $('#nx', m).onclick = () => { i < N - 1 ? scen(i + 1) : akhir(); scrollTo(0, 0); }; }
+        else { Sfx.skip = true; Sfx.play('bad'); salahIni[k] = 1; if (pertama[i] === null) pertama[i] = false; shield = Math.max(0, shield - 15); draw(); $('#fb', m).innerHTML = `<div class="card mt shake" style="background:var(--danger-s);border-color:#fca5a5">${esc(o.umpan)} <b>(−15% Perisai)</b> Coba pilihan lain!</div>`; }
       });
     };
     draw();
@@ -409,11 +415,11 @@ Stu.asesmen = function (m, ctx, A, dur, done) {
 // =====================================================================
 Stu.tka = function (m, ctx, A, dur, done) {
   const S = A.data.soal, meta = A.meta, MENIT = A.data.waktuMenit || meta.menit || 40, TOTAL = MENIT * 60;
-  const ans = {}, ragu = {}, st = { rasa: '', teks: '' }; let cur = 0, fs = 17, endAt = 0, phase = 'intro', tick = null, sending = false;
+  const ans = {}, ragu = {}, st = { rasa: '', teks: '' }; let cur = 0, fs = 17, endAt = 0, phase = 'intro', tick = null, sending = false, timeUp = false, w5 = false, w1 = false;
   const s = Sesi.get(), d = Stu.data || {}, nama = API.demo ? 'Siswa Tamu' : ((d.siswa && d.siswa.nama) || (s && s.me.nama) || ''), nis = API.demo ? 'CONTOH' : ((d.siswa && d.siswa.nis) || (s && s.me.nis) || ''), kelas = API.demo ? '7A' : ((d.siswa && d.siswa.kelas) || (s && s.me.kelas) || '');
   const bab = (d.bab) || PV.bab;
   document.body.classList.add('tka-mode'); window.onbeforeunload = () => phase === 'exam' ? 'Ujian sedang berlangsung.' : undefined;
-  const terjawab = q => { const v = ans[q.no]; if (v === undefined) return false; if (q.jenis === 'PGK') return v.length > 0; if (q.jenis === 'KAT') return v.some(x => x !== null && x !== undefined); return !!v; };
+  const terjawab = q => Stu.qLengkap(q, ans[q.no]);
   const jumlah = () => S.filter(terjawab).length;
   const bar = (timer) => `<div class="tka-bar"><div class="in"><img src="assets/img/logo.svg" width="38" height="38" alt=""><div class="ttl">SIMULASI TKA · ${esc(bab.mapel.replace(/\s*\(.*\)/, ''))}<small>${esc(meta.judul)} · Bab 2 Kelas VII Fase D</small></div><div class="tka-peserta"><b>${esc(nama)}</b><br>NIS ${esc(nis)} · Kelas ${esc(kelas)}</div>${timer ? `<div class="tka-timer" id="tkat"><div><small>SISA WAKTU</small><span id="tkav">--:--</span></div></div>` : ''}</div></div>`;
   const stopTick = () => { if (tick) { clearInterval(tick); tick = null; } };
@@ -422,9 +428,9 @@ Stu.tka = function (m, ctx, A, dur, done) {
   const intro = () => {
     phase = 'intro';
     m.innerHTML = `<div class="tka">${bar(false)}<div class="tka-center"><div class="tka-card pop"><h2 style="font-size:26px">Petunjuk Pengerjaan</h2>
-      <table class="tka-tb mt"><tbody>${[['Nama Peserta', nama], ['NIS / Kelas', nis + ' / ' + kelas], ['Mata Pelajaran', bab.mapel], ['Materi', bab.bab + ': ' + bab.judul], ['Jumlah Soal', S.length + ' soal'], ['Alokasi Waktu', MENIT + ' menit']].map(r => `<tr><td style="width:170px;background:#f3f4f8"><b>${r[0]}</b></td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table>
-      <h4 class="mt2">Bentuk soal</h4><ol class="tka-rules" style="margin:8px 0 0 20px"><li><b>Pilihan Ganda</b> — pilih <u>satu</u> jawaban yang paling tepat.</li><li><b>Pilihan Ganda Kompleks</b> — pilih <u>semua</u> jawaban yang benar (bisa lebih dari satu).</li><li><b>Pilihan Ganda Kompleks (Kategori)</b> — tentukan setiap pernyataan <i>Benar/Salah</i> atau <i>Sesuai/Tidak Sesuai</i>.</li></ol>
-      <h4 class="mt2">Ketentuan</h4><ol class="tka-rules" style="margin:8px 0 0 20px"><li>Waktu berjalan mundur. Saat waktu habis, ujian otomatis diakhiri.</li><li>Soal boleh dilewati dan ditandai <b>Ragu-ragu</b>. Gunakan <b>Daftar Soal</b> untuk berpindah nomor.</li><li>Soal yang tidak dijawab bernilai 0. Pilihan ganda kompleks dan kategori dinilai sebagian.</li><li>Pengerjaan pertama menjadi <b>Nilai Resmi</b>. Jangan menutup halaman saat ujian berlangsung.</li><li>Setelah selesai, kamu mengisi refleksi singkat sebelum nilai ditampilkan.</li></ol>
+      <table class="tka-tb mt"><tbody>${[['Nama Peserta', nama], ['NIS / Kelas', nis + ' / ' + kelas], ['Mata Pelajaran', bab.mapel], ['Materi', bab.bab + ': ' + bab.judul], ['Jumlah Soal', S.length + ' soal (' + (A.data.teks || []).length + ' teks bacaan)'], ['Alokasi Waktu', MENIT + ' menit (±' + (Math.round(MENIT / S.length * 10) / 10) + ' menit per soal)']].map(r => `<tr><td style="width:170px;background:#f3f4f8"><b>${r[0]}</b></td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table>
+      <div class="card mt2" style="background:var(--lav2);padding:12px 14px"><b>📖 Soal berbasis bacaan.</b> Baca teks dengan teliti, lalu jawab soal tentang isi teks: memahami informasi, menyimpulkan, dan menilai. Satu teks dapat dipakai untuk beberapa soal.</div><h4 class="mt2">Bentuk soal</h4><ol class="tka-rules" style="margin:8px 0 0 20px"><li><b>Pilihan Ganda</b> — pilih <u>satu</u> jawaban yang paling tepat.</li><li><b>Pilihan Ganda Kompleks</b> — pilih <u>semua</u> jawaban yang benar (bisa lebih dari satu).</li><li><b>Pilihan Ganda Kompleks (Kategori)</b> — tentukan setiap pernyataan <i>Benar/Salah</i> atau <i>Sesuai/Tidak Sesuai</i>.</li></ol>
+      <h4 class="mt2">Ketentuan</h4><ol class="tka-rules" style="margin:8px 0 0 20px"><li>Waktu berjalan mundur. Saat waktu habis, ujian otomatis diakhiri.</li><li>Soal boleh dilewati dan ditandai <b>Ragu-ragu</b>. Gunakan <b>Daftar Soal</b> untuk berpindah nomor.</li><li><b>Semua soal harus dijawab</b> sebelum jawaban dapat dikirim (kecuali waktu habis). Pilihan ganda kompleks dan kategori dinilai sebagian.</li><li>Pengerjaan pertama menjadi <b>Nilai Resmi</b>. Jangan menutup halaman saat ujian berlangsung.</li><li>Setelah selesai, kamu mengisi refleksi singkat sebelum nilai ditampilkan.</li></ol>
       ${A.punyaResmi ? '<div class="card mt row" style="background:#e9f9e4;border-color:var(--green)"><span style="font-size:24px">🔁</span><div class="small"><b>Mode Latihan Ulang.</b> Hasilnya tidak mengubah nilai resmi.</div></div>' : ''}
       <label class="row mt2" style="color:var(--text);cursor:pointer;font-size:14px"><input type="checkbox" id="ok" style="width:20px;height:20px"> Saya telah membaca petunjuk dan siap mengerjakan.</label>
       <div class="row mt2" style="justify-content:flex-end"><a class="btn btn-ghost" href="${ctx.base}/peta" id="bk">← Kembali</a><button class="btn btn-primary btn-lg off" id="go">▶ Mulai Mengerjakan</button></div></div></div></div>`;
@@ -433,15 +439,19 @@ Stu.tka = function (m, ctx, A, dur, done) {
     $('#go', m).onclick = e => { if (e.currentTarget.classList.contains('off')) return; endAt = Date.now() + TOTAL * 1000; phase = 'exam'; exam(); startTick(); scrollTo(0, 0); };
   };
   const sisa = () => Math.max(0, Math.round((endAt - Date.now()) / 1000));
-  const startTick = () => { tick = setInterval(() => { const x = sisa(), v = $('#tkav', m); if (v) { v.textContent = mmss(x); $('#tkat', m).classList.toggle('warn', x <= 300); } if (x <= 0) { stopTick(); phase = 'refleksi'; modal('<h3>⏰ Waktu Habis</h3><p class="mt">Waktu pengerjaan telah selesai. Jawabanmu akan dikumpulkan. Lanjutkan dengan mengisi refleksi.</p><div class="mt2" style="text-align:right"><button class="btn btn-primary" id="mo">Lanjut ke Refleksi</button></div>', () => refl()); $('#mo').onclick = () => $('.modal-x').click(); } }, 1000); _timers.push(tick); };
+  const startTick = () => { tick = setInterval(() => {
+      const x = sisa(), v = $('#tkav', m); if (v) { v.textContent = mmss(x); $('#tkat', m).classList.toggle('warn', x <= 300); }
+      if (x <= 300 && !w5) { w5 = true; Sfx.play('warn'); toast('Sisa waktu 5 menit ⏰'); } if (x <= 60 && !w1) { w1 = true; Sfx.play('warn'); }
+      if (x <= 0) { stopTick(); timeUp = true; phase = 'refleksi'; Sfx.play('alarm'); const lengkap = S.every(q => terjawab(q)); modal(`<h3>⏰ Waktu Habis</h3><p class="mt">${lengkap ? 'Semua soal sudah terjawab.' : 'Jawaban yang sudah kamu isi akan dikumpulkan.'} Lanjutkan dengan mengisi refleksi.</p><div class="mt2" style="text-align:right"><button class="btn btn-primary" id="mo">Lanjut ke Refleksi</button></div>`, () => refl()); $('#mo').onclick = () => $('.modal-x').click(); }
+    }, 1000); _timers.push(tick); };
   // ---------- 2. ujian ----------
   const body = q => Stu.qBody(q, ans[q.no]);
   const exam = () => {
-    const q = S[cur], j = q.jenis || 'PG';
+    const q = S[cur], j = q.jenis || 'PG', T = q.teksId ? (A.data.teks || []).find(x => x.id === q.teksId) : null;
     const info = { PG: 'Pilih satu jawaban yang paling tepat.', PGK: 'Pilih semua jawaban yang benar (lebih dari satu).', KAT: 'Tentukan jawaban untuk setiap pernyataan.' }[j];
     m.innerHTML = `<div class="tka" style="--fs:${fs}px">${bar(true)}<div class="tka-wrap"><div class="tka-q">
       <div class="tka-qh"><span>Soal nomor ${q.no} dari ${S.length}</span><span class="badge">${Soal.jenisLabel(j)}</span></div>
-      <div class="tka-qb">${q.kasus ? `<div class="tka-stim">${rich(q.kasus)}</div>` : ''}${Soal.img(q.gambar)}<p><b>${rich(q.tanya)}</b></p><p class="small muted" style="margin:4px 0 12px;font-size:13px">${info}</p>${body(q)}</div>
+      <div class="tka-qb ${T ? 'split' : ''}">${T ? `<details class="tka-text" open><summary>📄 Teks bacaan — ${esc(T.judul)}</summary>${Soal.teksHtml(T)}</details>` : ''}<div class="tka-qside">${q.kasus ? `<div class="tka-stim">${rich(q.kasus)}</div>` : ''}${Soal.img(q.gambar)}<p><b>${rich(q.tanya)}</b></p><p class="small muted" style="margin:4px 0 12px;font-size:13px">${info}</p>${body(q)}</div></div>
       <div class="tka-foot"><button class="btn btn-ghost btn-sm" id="pv" ${cur ? '' : 'disabled'}>← Sebelumnya</button><label class="row" style="cursor:pointer;font-weight:800;color:#8a5a00;margin:0"><input type="checkbox" id="rg" style="width:20px;height:20px" ${ragu[q.no] ? 'checked' : ''}> Ragu-ragu</label><button class="btn btn-ghost btn-sm tka-sheet-btn" id="sh">☰ Daftar Soal</button>${cur < S.length - 1 ? '<button class="btn btn-primary btn-sm" id="nx">Selanjutnya →</button>' : '<button class="btn btn-green btn-sm" id="fn">Selesai ✓</button>'}</div></div>
       <aside class="tka-nav" id="nav"><div class="row between"><b>Daftar Soal</b><span class="small muted">${jumlah()}/${S.length} terjawab</span></div><div class="tka-grid">${S.map((x, i) => `<button class="tka-n ${i === cur ? 'cur' : ''} ${ragu[x.no] ? 'ragu' : terjawab(x) ? 'ans' : ''}" data-n="${i}">${x.no}</button>`).join('')}</div>
         <div class="tka-leg"><span><i style="background:var(--green)"></i>Sudah dijawab</span><span><i style="background:var(--amber)"></i>Ragu-ragu</span><span><i style="background:#fff"></i>Belum dijawab</span></div>
@@ -458,11 +468,12 @@ Stu.tka = function (m, ctx, A, dur, done) {
   // ---------- 3. konfirmasi ----------
   const konfirmasi = () => {
     const kosong = S.filter(q => !terjawab(q)).map(q => q.no), rg = S.filter(q => ragu[q.no]).map(q => q.no);
-    m.innerHTML = `<div class="tka">${bar(true)}<div class="tka-center"><div class="tka-card pop"><h2 style="font-size:24px">Konfirmasi Selesai</h2><p class="muted mt">Periksa kembali sebelum mengakhiri ujian. Setelah dilanjutkan, jawaban tidak dapat diubah.</p>
+    m.innerHTML = `<div class="tka">${bar(true)}<div class="tka-center"><div class="tka-card pop"><h2 style="font-size:24px">Konfirmasi Selesai</h2><p class="muted mt">${kosong.length ? 'Kamu belum bisa mengirim jawaban.' : 'Periksa kembali sebelum mengakhiri ujian. Setelah dilanjutkan, jawaban tidak dapat diubah.'}</p>
       <div class="grid g3 mt" style="gap:10px"><div class="card center" style="padding:14px;background:#e9f9e4"><b style="font:800 30px var(--ff-h);color:var(--green-d)">${jumlah()}</b><div class="small">Terjawab</div></div><div class="card center" style="padding:14px;background:var(--danger-s)"><b style="font:800 30px var(--ff-h);color:var(--danger)">${kosong.length}</b><div class="small">Belum dijawab</div></div><div class="card center" style="padding:14px;background:#fff3c4"><b style="font:800 30px var(--ff-h);color:#8a5a00">${rg.length}</b><div class="small">Ragu-ragu</div></div></div>
-      ${kosong.length ? `<p class="mt small"><b>Belum dijawab:</b> soal ${kosong.join(', ')}</p>` : ''}${rg.length ? `<p class="mt small"><b>Ragu-ragu:</b> soal ${rg.join(', ')}</p>` : ''}
-      <div class="row mt2" style="justify-content:flex-end"><button class="btn btn-ghost" id="bk">← Kembali ke Soal</button><button class="btn btn-primary btn-lg shine" id="ok">Akhiri & Lanjut ke Refleksi →</button></div></div></div></div>`;
-    $('#bk', m).onclick = () => { phase = 'exam'; exam(); }; $('#ok', m).onclick = () => { stopTick(); phase = 'refleksi'; refl(); };
+      ${kosong.length ? `<div class="card mt" style="background:var(--danger-s);border-color:#fca5a5"><b>⛔ Semua soal harus dijawab dulu.</b><div class="small mt">Ketuk nomor soal untuk langsung menjawabnya:</div><div class="chips mt">${kosong.map(n => `<button class="chip" data-go="${n}">Soal ${n}</button>`).join('')}</div></div>` : ''}${rg.length ? `<p class="mt small"><b>Ragu-ragu:</b> soal ${rg.join(', ')}</p>` : ''}
+      <div class="row mt2" style="justify-content:flex-end"><button class="btn ${kosong.length ? 'btn-primary shine' : 'btn-ghost'}" id="bk">← Kembali ke Soal</button>${kosong.length ? '' : '<button class="btn btn-primary btn-lg shine" id="ok">Akhiri & Lanjut ke Refleksi →</button>'}</div></div></div></div>`;
+    $('#bk', m).onclick = () => { phase = 'exam'; exam(); }; const ok = $('#ok', m); if (ok) ok.onclick = () => { stopTick(); phase = 'refleksi'; refl(); };
+    $$('[data-go]', m).forEach(b => b.onclick = () => { cur = S.findIndex(q => q.no === +b.dataset.go); phase = 'exam'; exam(); scrollTo(0, 0); });
   };
   // ---------- 4. refleksi & kirim ----------
   const refl = () => {
@@ -475,7 +486,7 @@ Stu.tka = function (m, ctx, A, dur, done) {
     $('#kirim', m).onclick = async e => {
       const b = e.currentTarget; if (b.classList.contains('off') || sending) return; sending = true; b.textContent = 'Mengirim…'; b.classList.add('off');
       const jw = {}; S.forEach(q => { if (terjawab(q)) jw[q.no] = ans[q.no]; });
-      const r = await api('asesmen.kirim', { id: meta.id, jawaban: jw, refleksi: { perasaan: st.rasa, teks: st.teks }, durasi: Math.min(TOTAL, dur()) });
+      const r = await api('asesmen.kirim', { id: meta.id, jawaban: jw, refleksi: { perasaan: st.rasa, teks: st.teks }, durasi: timeUp ? TOTAL : Math.min(TOTAL - 20, dur()), waktuHabis: timeUp });
       sending = false;
       if (!r.success) { toast(r.message, 'err'); b.textContent = 'Coba kirim lagi'; b.classList.remove('off'); return; }
       keluar(); done(r.data);
@@ -488,7 +499,7 @@ Stu.tka = function (m, ctx, A, dur, done) {
 //  HASIL
 // =====================================================================
 Stu.hasil = function (m, ctx, A, R) {
-  dropCache(); document.body.classList.remove('tka-mode'); window.onbeforeunload = null;
+  dropCache(); document.body.classList.remove('tka-mode'); window.onbeforeunload = null; Soal.teks = R.teks || [];
   const meta = A.meta, sum = meta.jenis === 'Sumatif', lulus = R.skor >= 72, d = Stu.data;
   const nama = d ? d.siswa.nama.split(' ')[0] : (Sesi.get() ? Sesi.get().me.nama.split(' ')[0] : '');
   const lab = R.resmi ? 'Nilai Resmi (Percobaan ke-1)' : 'Latihan ke-' + R.nomor + ' (tidak memengaruhi nilai resmi)';

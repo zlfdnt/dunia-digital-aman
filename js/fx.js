@@ -8,10 +8,67 @@ const waktu = s => { if (!s) return '-'; const d = new Date(String(s).replace(' 
 const lalu = s => { const d = new Date(String(s).replace(' ', 'T') + '+07:00'), m = Math.round((Date.now() - d) / 60000); return isNaN(d) ? '' : m < 1 ? 'baru saja' : m < 60 ? m + ' menit yang lalu' : m < 1440 ? Math.round(m / 60) + ' jam yang lalu' : Math.round(m / 1440) + ' hari yang lalu'; };
 const mmss = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
 
+
+// ---------- EFEK SUARA (sintesis WebAudio, tanpa berkas): beragam tetapi konsisten per fungsi ----------
+const Sfx = {
+  ctx: null, on: (function () { try { return localStorage.getItem('ddd_sfx') !== 'off'; } catch (e) { return true; } })(), vol: .55, skip: false, last: 0,
+  ac() { if (!this.ctx) { const C = window.AudioContext || window.webkitAudioContext; if (!C) return null; try { this.ctx = new C(); } catch (e) { return null; } } if (this.ctx.state === 'suspended') this.ctx.resume(); return this.ctx; },
+  tone(f, d, type, g, to, at) {
+    const c = this.ctx, t = c.currentTime + (at || 0), o = c.createOscillator(), a = c.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + d);
+    a.gain.setValueAtTime(0.0001, t); a.gain.exponentialRampToValueAtTime(Math.max(.001, (g || .15) * this.vol), t + .008); a.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(a); a.connect(c.destination); o.start(t); o.stop(t + d + .02);
+  },
+  noise(d, g, f1, f2) {
+    const c = this.ctx, n = Math.floor(c.sampleRate * d), buf = c.createBuffer(1, n, c.sampleRate), ch = buf.getChannelData(0); for (let i = 0; i < n; i++) ch[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(), bp = c.createBiquadFilter(), a = c.createGain(), t = c.currentTime; s.buffer = buf; bp.type = 'bandpass'; bp.Q.value = 1.2; bp.frequency.setValueAtTime(f1, t); bp.frequency.exponentialRampToValueAtTime(f2, t + d);
+    a.gain.setValueAtTime(g * this.vol, t); a.gain.exponentialRampToValueAtTime(.0001, t + d); s.connect(bp); bp.connect(a); a.connect(c.destination); s.start(t);
+  },
+  play(n) {
+    if (!this.on) return; const now = performance.now(); if (now - this.last < 35 && n !== 'win' && n !== 'ok' && n !== 'bad') return; this.last = now;
+    if (!this.ac()) return;
+    switch (n) {
+      case 'tap': this.tone(620, .05, 'sine', .13, 420); break;                                   // tombol biasa
+      case 'select': this.tone(520, .07, 'triangle', .17, 780); break;                              // memilih jawaban / pilihan
+      case 'cta': this.tone(523, .08, 'triangle', .16); this.tone(784, .13, 'triangle', .16, null, .07); break;   // tombol utama (mulai, lanjut, kirim)
+      case 'nav': this.noise(.14, .1, 600, 2400); this.tone(300, .1, 'sine', .06, 200); break;       // pindah halaman / menu
+      case 'toggle': this.tone(880, .03, 'square', .05); this.tone(660, .04, 'square', .05, null, .05); break;  // centang, buka-tutup
+      case 'ok': [523, 659, 784].forEach((f, i) => this.tone(f, .12, 'sine', .2, null, i * .08)); break;        // jawaban benar
+      case 'bad': this.tone(190, .24, 'sawtooth', .13, 105); break;                                  // jawaban salah / galat
+      case 'win': [523, 659, 784, 1047].forEach((f, i) => this.tone(f, .16, 'triangle', .2, null, i * .09)); [523, 659, 784].forEach(f => this.tone(f, .5, 'sine', .08, null, .38)); break;   // selesai / sukses
+      case 'lock': this.tone(220, .06, 'square', .09); this.tone(185, .09, 'square', .09, null, .08); break;    // terkunci
+      case 'open': this.tone(420, .12, 'sine', .13, 840); break;
+      case 'close': this.tone(840, .12, 'sine', .13, 420); break;
+      case 'type': this.tone(1400, .015, 'square', .035); break;
+      case 'warn': [0, .2, .4].forEach(a => this.tone(988, .12, 'square', .08, null, a)); break;
+      case 'alarm': [0, .22, .44, .66].forEach(a => this.tone(1175, .16, 'square', .1, null, a)); break;
+    }
+  },
+  setOn(v) { this.on = !!v; try { localStorage.setItem('ddd_sfx', v ? 'on' : 'off'); } catch (e) {} this.paint(); },
+  toggle() { const v = !this.on; if (v) { this.on = true; this.play('ok'); } this.setOn(v); toast(v ? 'Suara dinyalakan 🔊' : 'Suara dimatikan 🔇'); },
+  paint() { $$('[data-sfx-toggle]').forEach(b => { b.textContent = this.on ? '🔊' : '🔇'; b.setAttribute('aria-label', this.on ? 'Matikan suara' : 'Nyalakan suara'); b.title = this.on ? 'Matikan suara' : 'Nyalakan suara'; }); }
+};
+const sfxBtn = () => `<button class="sfx-btn" data-sfx-toggle data-sfx="none" type="button">${Sfx.on ? '🔊' : '🔇'}</button>`;
+document.addEventListener('click', e => {
+  const t = e.target; if (!t || !t.closest) return;
+  const tg = t.closest('[data-sfx-toggle]'); if (tg) { Sfx.toggle(); return; }
+  if (Sfx.skip) { Sfx.skip = false; return; }
+  const x = t.closest('[data-sfx]'); if (x) { if (x.dataset.sfx !== 'none') Sfx.play(x.dataset.sfx); return; }
+  if (t.closest('.modal-x')) return Sfx.play('close');
+  if (t.closest('[data-act=lock], .akt.terkunci, .btn.off')) return Sfx.play('lock');
+  if (t.closest('.tka-n')) return Sfx.play('nav');
+  if (t.closest('.opt, .tka-opt, .tka-rad, .rf-opt, .chip')) return Sfx.play('select');
+  if (t.closest('.s-nav a, .back, .g-side nav a, .kelas-tabs button, .tabs button, .nav-links a, .pager button, .hero-dots b, .sl-dots b, .logo')) return Sfx.play('nav');
+  const b = t.closest('.btn'); if (b) return Sfx.play(b.classList.contains('btn-primary') || b.classList.contains('btn-green') ? 'cta' : 'tap');
+  if (t.closest('input[type=checkbox], input[type=radio], summary, select')) return Sfx.play('toggle');
+  if (t.closest('a[href]')) return Sfx.play('nav');
+  if (t.closest('button')) return Sfx.play('tap');
+});
+
 let _toastT;
-function toast(msg, tipe) { const t = $('#toast'); t.textContent = msg; t.className = 'show ' + (tipe || ''); clearTimeout(_toastT); _toastT = setTimeout(() => t.classList.remove('show'), 3200); }
+function toast(msg, tipe) { if (tipe === 'err') { Sfx.skip = false; Sfx.play('bad'); } else if (tipe === 'ok') Sfx.play('ok'); const t = $('#toast'); t.textContent = msg; t.className = 'show ' + (tipe || ''); clearTimeout(_toastT); _toastT = setTimeout(() => t.classList.remove('show'), 3200); }
 function modal(html, onClose) {
-  const m = $('#modal'); m.innerHTML = '<div class="modal-box"><button class="modal-x" aria-label="Tutup">✕</button>' + html + '</div>'; m.classList.add('show');
+  Sfx.play('open'); const m = $('#modal'); m.innerHTML = '<div class="modal-box"><button class="modal-x" aria-label="Tutup">✕</button>' + html + '</div>'; m.classList.add('show');
   const close = () => { m.classList.remove('show'); m.innerHTML = ''; onClose && onClose(); };
   m.onclick = e => { if (e.target === m) close(); }; $('.modal-x', m).onclick = close; return { close, el: m };
 }
@@ -26,7 +83,7 @@ function confirmBox(judul, teks, okLabel) {
 // ---------- konfeti ----------
 const Confetti = {
   go(n) {
-    const c = $('#confetti'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
+    Sfx.play('win'); const c = $('#confetti'), x = c.getContext('2d'); c.width = innerWidth; c.height = innerHeight;
     const cols = ['#7C4DFF', '#EC4899', '#FBBF24', '#5FA052', '#5B8DEF'];
     const ps = Array.from({ length: n || 140 }, () => ({ x: innerWidth / 2 + (Math.random() - .5) * 200, y: innerHeight * .4, vx: (Math.random() - .5) * 16, vy: -Math.random() * 15 - 4, s: 6 + Math.random() * 7, c: cols[Math.random() * 5 | 0], r: Math.random() * 6, vr: (Math.random() - .5) * .4 }));
     let f = 0; (function step() {
@@ -103,7 +160,7 @@ const Lup = {
     '<path class="mouth-s" d="M29 47 Q36 53 43 47" stroke="#22223B" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse class="mouth-o" cx="36" cy="49" rx="5" ry="5.5" fill="#EC4899" stroke="#22223B" stroke-width="2"/>' +
     '<g class="zz"><text x="58" y="14" font-size="14" font-weight="800" fill="#7C4DFF" font-family="Arial">z</text><text x="68" y="6" font-size="10" font-weight="800" fill="#EC4899" font-family="Arial">z</text></g></g></svg>',
   prefOn() { return localStorage.getItem('ddd_lup') !== 'off'; },
-  supported() { return matchMedia('(pointer:fine)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches; },
+  supported() { return matchMedia('(pointer:fine)').matches && matchMedia('(hover:hover)').matches && !matchMedia('(prefers-reduced-motion:reduce)').matches; },
   init() {
     if (this.el || !this.supported()) return;
     const el = this.el = document.createElement('div'); el.id = 'lup'; el.innerHTML = this.svg; document.body.appendChild(el);
@@ -135,4 +192,4 @@ const Lup = {
   set(v) { this.on = !!v && !!this.el; document.body.classList.toggle('lup-on', this.on); if (!this.on && this.el) this.el.classList.remove('vis'); try { localStorage.setItem('ddd_lup', v ? 'on' : 'off'); } catch (e) {} },
   toggle() { if (!this.supported()) { toast('Kursor lup hanya tersedia di komputer/laptop dengan mouse.'); return; } if (!this.el) this.init(); this.set(!this.on); toast(this.on ? 'Kursor lup dinyalakan 🔍' : 'Kursor lup dimatikan'); }
 };
-addEventListener('DOMContentLoaded', () => Lup.init());
+addEventListener('DOMContentLoaded', () => { Lup.init(); Sfx.paint(); });
