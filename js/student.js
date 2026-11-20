@@ -177,7 +177,7 @@ Stu.kegiatan = function (m, A, head, selesai) {
 const Soal = {
   teks: [],
   teksHtml(T) {
-    return `<div class="tka-teks"><div class="tt-h"><span class="badge">${esc(T.jenis)}</span> <b>${esc(T.judul)}</b></div>${T.bagian.map(b => `${b.label ? `<div class="tt-lab">${esc(b.label)}${b.judul ? ': ' + esc(b.judul) : ''}</div>` : ''}${b.gambar ? `<div class="soal-img"><img src="${esc(b.gambar)}" alt="Gambar pada teks" loading="lazy"></div>` : ''}${b.paragraf.map(p => `<p>${rich(p)}</p>`).join('')}`).join('<hr class="tt-hr">')}</div>`;
+    return `<div class="tka-teks"><div class="tt-h"><span class="badge">${esc(T.jenis)}</span> <b>${esc(T.judul)}</b></div>${T.bagian.map(b => `${b.label ? `<div class="tt-lab">${esc(b.label)}${b.judul ? ': ' + esc(b.judul) : ''}</div>` : ''}${b.gambar ? `<div class="soal-img"><img src="${esc(b.gambar)}" alt="Gambar pada teks" loading="lazy"></div>` : ''}${b.paragraf.map(p => `<p>${rich(p)}</p>`).join('')}${b.tabel ? `<div class="tt-tbwrap"><table class="tt-table"><caption>${esc(b.tabel.cap || '')}</caption><thead><tr>${b.tabel.kepala.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${b.tabel.baris.map(r => `<tr>${r.map((c, i) => `<td${/^[0-9.,%\s]+$/.test(c) && i > 0 ? ' class="num"' : ''}>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : ''}`).join('<hr class="tt-hr">')}</div>`;
   },
   img: g => g ? `<div class="soal-img"><img src="${esc(g)}" alt="Gambar pendukung soal" loading="lazy"></div>` : '',
   jenisLabel: j => ({ PG: 'Pilihan Ganda', PGK: 'Pilihan Ganda Kompleks', KAT: 'Pilihan Ganda Kompleks (Kategori)' }[j || 'PG']),
@@ -195,7 +195,7 @@ const Soal = {
       body = `<div class="tb-wrap"><table class="tb"><thead><tr><th>Pernyataan</th><th>Jawaban siswa</th><th>Kunci</th></tr></thead><tbody>${h.pernyataan.map((p, i) => { const ok = js[i] === h.kunci[i]; return `<tr class="${ok ? '' : 'red'}"><td>${rich(p)}</td><td>${js[i] === null || js[i] === undefined ? '<i class="muted">kosong</i>' : esc(h.kolom[js[i]])} ${ok ? '✓' : '✕'}</td><td><b>${esc(h.kolom[h.kunci[i]])}</b></td></tr>`; }).join('')}</tbody></table></div>`;
     }
     const T = h.teksId ? (Soal.teks || []).find(x => x.id === h.teksId) : null;
-    const meta = h.kompetensi ? `<div class="row wrap" style="margin-bottom:8px;gap:6px"><span class="badge">${esc(h.kompetensi)}</span><span class="badge b-warm">Level ${h.level}</span></div>` : '';
+    const meta = h.kompetensi ? `<div class="row wrap" style="margin-bottom:4px;gap:6px"><span class="badge">${esc(h.kompetensi)}</span><span class="badge b-warm">Level ${h.level}</span></div>${h.subkompetensi ? `<div class="tiny muted" style="margin-bottom:8px">Sub-kompetensi: ${esc(h.subkompetensi)}</div>` : ''}` : '';
     return `${meta}${T ? `<details class="mb"><summary class="small" style="cursor:pointer;font-weight:800;color:var(--primary-d)">📄 Lihat teks bacaan: ${esc(T.judul)}</summary>${Soal.teksHtml(T)}</details>` : ''}${h.kasus ? `<p class="small muted">${rich(h.kasus)}</p>` : ''}${Soal.img(h.gambar)}<p><b>${rich(h.tanya)}</b></p><div class="mt">${body}</div><div class="card warm mt small"><b>Analisis:</b> ${rich(h.analisis)}</div>`;
   }
 };

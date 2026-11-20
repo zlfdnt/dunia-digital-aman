@@ -2,12 +2,19 @@
 const Views = window.Views = window.Views || {};
 const IMG = n => 'assets/img/' + n + '.svg';
 const MODUL = [
-  { id: 'S1', tag: 'Sub-bab 1', judul: 'Cara Kerja Internet & Mesin Pencari', ket: 'Ikuti perjalanan paket data dan bongkar rahasia robot penjelajah mesin pencari.', img: ['modul-1-a', 'modul-1-b', 'modul-1-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🧩 Kegiatan', '📝 Asesmen'], menit: 62 },
-  { id: 'S2', tag: 'Sub-bab 2', judul: 'Literasi Digital & Evaluasi Informasi', ket: 'Jadi detektif cek fakta: kenali hoaks, periksa domain, dan terapkan prinsip S.A.R.I.', img: ['modul-2-a', 'modul-2-b', 'modul-2-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🧩 Eksperimen Hoaks', '🛡️ Tantangan Kode Mini', '📝 Asesmen'], menit: 83 },
-  { id: 'S3', tag: 'Sub-bab 3', judul: 'Ancaman Digital & Perlindungan Data Pribadi', ket: 'Tangkis phishing, jaga kode OTP, buat sandi kuat, dan aktifkan verifikasi dua langkah.', img: ['modul-3-a', 'modul-3-b', 'modul-3-c'], chip: ['📖 Materi', '🧪 Lab (3 Simulasi)', '🔑 Bengkel Sandi', '📝 Asesmen'], menit: 61 },
-  { id: 'SUM', tag: 'Uji Kompetensi', judul: 'Asesmen Sumatif Bab 2 (Simulasi TKA)', ket: 'Tampilan ujian berbasis komputer: 3 bentuk soal, daftar soal, ragu-ragu, dan timer. Terbuka setelah semua sub-bab selesai. KKM 72.', img: ['modul-4-a', 'modul-4-b', 'modul-4-c'], chip: ['🏆 20 Soal Format TKA', '⭐ Nilai Resmi'], menit: 40 }
+  { id: 'S1', tag: 'Sub-bab 1', judul: 'Cara Kerja Internet & Mesin Pencari', ket: 'Ikuti perjalanan paket data dan bongkar rahasia robot penjelajah mesin pencari.', img: ['modul-1-a', 'modul-1-b', 'modul-1-c'], chip: [['📖', 'Materi', '12 halaman'], ['🧪', 'Lab', '3 simulasi'], ['🧩', 'Kegiatan', 'Studi kasus'], ['📝', 'Asesmen', '5 soal']], menit: 62 },
+  { id: 'S2', tag: 'Sub-bab 2', judul: 'Literasi Digital & Evaluasi Informasi', ket: 'Jadi detektif cek fakta: kenali hoaks, periksa domain, lalu uji dirimu di Tantangan Kode Mini.', img: ['modul-2-a', 'modul-2-b', 'modul-2-c'], chip: [['📖', 'Materi', '16 halaman'], ['🧪', 'Lab', '3 simulasi'], ['🧩', 'Kegiatan', 'Studi kasus'], ['📝', 'Asesmen', '5 soal']], menit: 83 },
+  { id: 'S3', tag: 'Sub-bab 3', judul: 'Ancaman Digital & Perlindungan Data Pribadi', ket: 'Tangkis phishing, jaga kode OTP, buat sandi kuat, dan aktifkan verifikasi dua langkah.', img: ['modul-3-a', 'modul-3-b', 'modul-3-c'], chip: [['📖', 'Materi', '9 halaman'], ['🧪', 'Lab', '3 simulasi'], ['🧩', 'Kegiatan', 'Studi kasus'], ['📝', 'Asesmen', '5 soal']], menit: 61 },
+  { id: 'SUM', tag: 'Uji Kompetensi', judul: 'Asesmen Sumatif Bab 2 (Simulasi TKA)', ket: 'Ujian berbasis komputer dengan teks bacaan. Terbuka setelah semua sub-bab selesai.', img: ['modul-4-a', 'modul-4-b', 'modul-4-c'], chip: [['📚', 'Naskah', '6 teks'], ['📝', 'Soal', '20 soal'], ['⏱', 'Waktu', '50 menit'], ['⭐', 'KKM', '72']], menit: 50 }
 ];
-const ALUR = [['📖', 'Pahami', 'Materi interaktif bernarasi yang dekat dengan keseharianmu.'], ['🧪', 'Praktikkan', 'Lab & simulasi: cari fakta, bongkar pesan phishing.'], ['🧩', 'Terapkan', 'Kegiatan studi kasus: pilih langkah terbaik.'], ['📝', 'Asesmen', 'Soal bernarasi dengan umpan balik langsung.'], ['💭', 'Refleksi', 'Tuliskan pelajaranmu, lalu nilai resmi terbuka.'], ['🏅', 'Naik Level', 'Sub-bab berikutnya terbuka. Selesai semua = bebas belajar ulang!']];
+const ALUR = [
+  { ic: '📖', t: 'Pahami', d: 'Materi bernarasi yang dekat dengan keseharianmu, lengkap dengan diagram, video, dan kotak Kamus Pintar.', pts: ['Diagram dan video tersemat di halaman', 'Coba simulasi langsung saat membaca', 'Kasus nyata dari Indonesia'], mini: 'flip' },
+  { ic: '🧪', t: 'Praktikkan', d: 'Lab simulasi: cari fakta, bongkar pesan phishing, dan putuskan langkah paling aman seperti detektif digital.', pts: ['3 simulasi di setiap lab', 'Umpan balik langsung benar atau salah', 'Tantangan Kode Mini dengan Perisai Digital'], mini: 'phish' },
+  { ic: '🧩', t: 'Terapkan', d: 'Kegiatan studi kasus: pilih langkah terbaik dan pakai aturan logika JIKA–MAKA untuk mengambil keputusan.', pts: ['Skenario sehari-hari yang nyata', 'Aturan logika yang mudah diingat', 'Boleh mencoba lagi sampai paham'], mini: 'rule' },
+  { ic: '📝', t: 'Asesmen', d: 'Soal bernarasi dengan umpan balik langsung. Sumatif tampil seperti ujian berbasis komputer (Simulasi TKA).', pts: ['Teks bacaan, bukan hafalan', 'Tiga bentuk soal ala TKA', 'Pembahasan di setiap soal'], mini: 'quiz' },
+  { ic: '💭', t: 'Refleksi', d: 'Tuliskan pelajaran terpentingmu. Setelah refleksi terisi, nilai resmi terbuka.', pts: ['Pilih perasaanmu: senang, tertantang, paham, atau butuh guru', 'Guru dapat membalas refleksimu', 'Melatih sikap dan kejujuran belajar'], mini: 'mood' },
+  { ic: '🏅', t: 'Naik Level', d: 'Aktivitas berikutnya terbuka, XP bertambah, dan namamu bisa masuk papan peringkat. Selesai semua? Bebas belajar ulang!', pts: ['XP dan level untuk setiap aktivitas', 'Papan peringkat penjelajah digital', 'Nilai resmi aman, latihan ulang bebas beban'], mini: 'xp' }
+];
 const FITUR = [['🔒', 'Kunci berurutan, dijaga server', 'Aktivitas terkunci tidak bisa dibuka lewat tautan atau kode di browser.'], ['🔁', 'Latihan ulang bebas beban', 'Nilai resmi dari pengerjaan pertama. Latihan tidak menimpa nilai.'], ['📊', 'Dashboard guru multi-kelas', 'Progres, nilai, grafik statistik, filter, dan buka kunci manual.'], ['📥', 'Unduh Excel & PDF', 'Rekap nilai resmi siap untuk e-Rapor/Dapodik.']];
 
 Views.landing = function (el) {
@@ -40,14 +47,18 @@ Views.landing = function (el) {
     <div class="grid g4">${MODUL.map(m => `
       <article class="card prod glow tilt rv"><span class="badge b-warm tag">${m.tag}</span>
         <div class="slides" data-slides="${m.img.map(IMG).join(',')}"></div>
-        <div class="body"><h4>${m.judul}</h4><p class="muted small">${m.ket}</p>
-          <div class="row wrap">${m.chip.map(c => `<span class="badge">${c}</span>`).join('')}</div>
+        <div class="body"><h4 class="ptitle">${m.judul}</h4><p class="muted small pdesc">${m.ket}</p>
+          <div class="chips4">${m.chip.map(c => `<div class="chip4"><span class="ci">${c[0]}</span><span class="ct"><b>${c[1]}</b><small>${c[2]}</small></span></div>`).join('')}</div>
           <div class="row between" style="margin-top:auto"><span class="small muted">⏱ ±${m.menit} menit</span><a class="btn btn-green btn-sm shine" href="#/ps/beranda">Pratinjau ▶</a></div></div>
       </article>`).join('')}</div>
   </div></section>
   <section class="sec" id="alur" style="background:#fff"><div class="container">
-    <h2 class="center rv">Alur Belajar yang Menyenangkan</h2><p class="lead rv">Setiap sub-bab mengikuti enam langkah. Aktivitas berikutnya terbuka setelah yang sebelumnya selesai.</p>
-    <div class="grid g3">${ALUR.map((a, i) => `<div class="card step glow rv"><div class="n">${i + 1}</div><div style="font-size:34px">${a[0]}</div><h4>${a[1]}</h4><p class="muted small">${a[2]}</p></div>`).join('')}</div>
+    <h2 class="center rv">Alur Belajar yang Menyenangkan</h2><p class="lead rv">Enam langkah di setiap sub-bab. Ketuk nomornya, lalu coba mini-tantangannya!</p>
+    <div class="stp rv" id="stp">
+      <div class="stp-rail"><div class="stp-line"><i id="stpf"></i></div>${ALUR.map((a, i) => `<button class="stp-b ${i ? '' : 'on'}" data-i="${i}" data-sfx="select" aria-label="Langkah ${i + 1}: ${a.t}"><span class="stp-n shine">${i + 1}</span><span class="stp-l">${a.ic} ${a.t}</span></button>`).join('')}</div>
+      <div class="card stp-stage glow" id="stpg"></div>
+      <div class="row between mt"><button class="btn btn-ghost btn-sm" id="stpp">← Sebelumnya</button><span class="small muted" id="stpc"></span><button class="btn btn-primary btn-sm shine" id="stpn">Berikutnya →</button></div>
+    </div>
   </div></section>
   <section class="sec" id="guru"><div class="container grid g2" style="align-items:center">
     <div class="rv"><span class="badge">👩‍🏫 Untuk Guru</span><h2 class="mt">Pantau Semua Kelas dalam Satu Dashboard</h2><p class="muted mt">Lihat progres setiap siswa, nilai resmi per sub-bab, siapa yang perlu remedial, lalu buka kunci aktivitas secara manual — lengkap dengan catatan audit.</p>
@@ -67,8 +78,51 @@ Views.landing = function (el) {
   <footer><div class="container row between wrap"><div><b style="color:#fff;font-family:var(--ff-h)">Menjelajahi Dunia Digital dengan Aman</b><div class="small">Koding dan Kecerdasan Artifisial · Kelas VII · Fase D · Guru: ${esc(PV.bab.guru)}</div></div>
     <div class="row"><button class="btn btn-sm" style="background:#2e2b57;color:#fff" data-act="lup">🔍 Kursor Lup: nyala/mati</button></div></div></footer>`;
   $('[data-act=lup]', el).onclick = () => Lup.toggle();
-  initHero(el); afterRender(el); Rank.load($('#rank-box', el));
+  initHero(el); afterRender(el); initAlur(el); Rank.load($('#rank-box', el));
 };
+
+// ---- Alur belajar interaktif (stepper otomatis + mini-tantangan) ----
+const MINI = {
+  flip: () => `<div class="mini"><div class="mflip" tabindex="0"><div class="mf-in"><div class="mf-f"><b>Apa fungsi DNS?</b><small>ketuk untuk membalik ↻</small></div><div class="mf-b"><b>Buku alamat internet</b><small>DNS mencocokkan nama situs dengan alamat IP-nya.</small></div></div></div></div>`,
+  phish: () => `<div class="mini"><div class="chat"><div class="bub">🎉 <b>SELAMAT!</b> Kamu menang HP gratis. Klik tautan ini sekarang atau hadiah hangus!</div></div><div class="row wrap mt"><button class="btn btn-soft btn-sm" data-m="0">🖱️ Klik tautan</button><button class="btn btn-soft btn-sm" data-m="1">🚫 Blokir & tanya guru</button></div><div class="mres small mt"></div></div>`,
+  rule: () => `<div class="mini"><div class="mrule"><b>JIKA</b> informasi tidak ada sumbernya, <b>MAKA</b> …</div><div class="row wrap mt"><button class="btn btn-soft btn-sm" data-m="0">📤 Langsung bagikan</button><button class="btn btn-soft btn-sm" data-m="1">🔎 Periksa dulu kebenarannya</button></div><div class="mres small mt"></div></div>`,
+  quiz: () => `<div class="mini"><div class="row between"><b class="small">Soal 1 dari 20</b><span class="badge b-amber">⏱ 02:30</span></div><p class="small mt"><b>Rani hanya membuka hasil pencarian paling atas lalu menyalinnya. Apa risiko utamanya?</b></p><div class="mt"><button class="opt" data-m="0"><span class="dot">A</span><span>Tugasnya pasti paling benar</span></button><button class="opt" data-m="1"><span class="dot">B</span><span>Ia dapat memakai informasi lama atau keliru tanpa sadar</span></button></div><div class="mres small"></div></div>`,
+  mood: () => `<div class="mini"><p class="small"><b>Bagaimana perasaanmu setelah belajar hari ini?</b></p><div class="rf-opts mt">${[['😄', 'Senang'], ['🔥', 'Tertantang'], ['💡', 'Paham'], ['🤝', 'Butuh Guru']].map((r, i) => `<button class="rf-opt" data-m="${i}"><span class="e">${r[0]}</span>${r[1]}</button>`).join('')}</div><div class="mres small mt"></div></div>`,
+  xp: () => `<div class="mini"><div class="row between"><b>Level <span id="lv">1</span></b><span class="badge b-ok"><span id="xpv">0</span> XP</span></div><div class="bar mt" style="height:14px"><i id="xpb" style="width:0"></i></div><button class="btn btn-green btn-sm mt shine" id="xpg">⭐ Selesaikan aktivitas (+25 XP)</button><div class="mres small mt"></div></div>`
+};
+function initAlur(root) {
+  const box = $('#stp', root); if (!box) return; const n = ALUR.length; let cur = 0, auto = true, tmr = null, xp = 0;
+  const stage = $('#stpg', root);
+  const show = (i, manual) => {
+    cur = (i + n) % n; if (manual) auto = false;
+    $$('.stp-b', box).forEach((b, k) => { b.classList.toggle('on', k === cur); b.classList.toggle('done', k < cur); });
+    $('#stpf', box).style.width = (cur / (n - 1) * 100) + '%'; $('#stpc', box).textContent = 'Langkah ' + (cur + 1) + ' dari ' + n;
+    const a = ALUR[cur]; stage.classList.remove('swap'); void stage.offsetWidth; stage.classList.add('swap');
+    stage.innerHTML = `<div class="stg"><div class="stg-l"><div class="stg-ic float">${a.ic}</div><span class="badge">Langkah ${cur + 1}</span><h3 class="mt">${a.t}</h3><p class="muted mt">${a.d}</p><ul class="stg-pts">${a.pts.map(p => `<li>${p}</li>`).join('')}</ul></div><div class="stg-r"><div class="tiny muted" style="font-weight:800;letter-spacing:.06em">COBA SEKARANG</div>${MINI[a.mini]()}</div></div>`;
+    bindMini(a.mini);
+  };
+  const res = (ok, t) => { const r = $('.mres', stage); if (r) r.innerHTML = `<div class="card pop" style="padding:10px 12px;background:${ok ? 'var(--green-l)' : 'var(--danger-s)'};border-color:${ok ? 'var(--green)' : '#fca5a5'}">${t}</div>`; };
+  const bindMini = k => {
+    auto = auto && true; const hold = () => { auto = false; };
+    if (k === 'flip') { const f = $('.mflip', stage); f.onclick = () => { f.classList.toggle('on'); hold(); }; f.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') f.click(); }; }
+    $$('[data-m]', stage).forEach(b => b.onclick = () => {
+      hold(); const v = +b.dataset.m; Sfx.skip = true;
+      if (k === 'xp') return;
+      const good = (k === 'phish' || k === 'rule' || k === 'quiz') ? v === 1 : true;
+      if (k === 'mood') { Sfx.play('ok'); $$('.rf-opt', stage).forEach(x => x.classList.toggle('on', x === b)); return res(true, 'Terima kasih! Refleksimu membantu gurumu dan membuka nilai resmi. 💜'); }
+      if (good) { Sfx.play('ok'); b.classList.add('ok'); res(true, k === 'phish' ? '✅ Tepat! Hadiah mendadak adalah ciri phishing. Blokir dan tanyakan pada orang dewasa.' : k === 'rule' ? '✅ Benar! Informasi tanpa sumber harus diperiksa dulu sebelum dibagikan.' : '✅ Tepat! Hasil teratas relevan, tetapi belum tentu terbaru atau benar.'); }
+      else { Sfx.play('bad'); b.classList.add('bad', 'shake'); res(false, k === 'phish' ? '❌ Awas! Tautan seperti itu dapat mencuri datamu. Coba pilihan lain.' : k === 'rule' ? '❌ Menyebarkan kabar tanpa sumber bisa menyesatkan banyak orang. Coba lagi!' : '❌ Belum tepat. Pikirkan: apakah hasil teratas pasti benar dan terbaru?'); }
+    });
+    const xg = $('#xpg', stage); if (xg) xg.onclick = () => { auto = false; Sfx.skip = true; xp = Math.min(100, xp + 25); const lvl = 1 + Math.floor(xp / 100 * 1); $('#xpv', stage).textContent = xp; $('#xpb', stage).style.width = xp + '%'; if (xp >= 100) { Sfx.play('win'); $('#lv', stage).textContent = 2; Confetti.go(60); res(true, '🎉 Naik ke Level 2! Aktivitas berikutnya terbuka.'); xp = 0; setTimeout(() => { if ($('#xpb', stage)) { $('#xpb', stage).style.width = '0'; $('#xpv', stage).textContent = 0; } }, 1400); } else { Sfx.play('ok'); res(true, '+25 XP! Terus semangat. ⭐'); } };
+  };
+  $$('.stp-b', box).forEach(b => b.onclick = () => show(+b.dataset.i, true));
+  $('#stpp', box).onclick = () => show(cur - 1, true); $('#stpn', box).onclick = () => show(cur + 1, true);
+  box.addEventListener('keydown', e => { if (e.key === 'ArrowRight') show(cur + 1, true); if (e.key === 'ArrowLeft') show(cur - 1, true); });
+  stage.addEventListener('mouseenter', () => { auto = false; });
+  const ob = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { show(0); const t = setInterval(() => { if (auto && !document.hidden) show(cur + 1); }, 6500); _timers.push(t); ob.disconnect(); } }), { threshold: .25 }); ob.observe(box);
+  show(0);
+}
+
 Views.masuk = function (el, q) {
   let tab = q && q.t === 'guru' ? 'guru' : 'siswa', kelas = '7A', daftarKelas = ['7A', '7B', '7C'];
   const draw = () => {
